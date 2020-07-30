@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <link href="../base.css" rel="stylesheet" type="text/css">
+        <title>Teadit - 自己动手做一个SwingPlaf</title>
+    </head>
+    <body>
+        <h3 onClick="javascript: history.back(-1);">𝑩𝒂𝒄𝒌</h3>
+        <div>
+            <h1>—— 自己动手做一个SwingPlaf ——</h1>
+            <h4>TeaLing - 2020/7/30</h4>
+            <div style="text-align: left">
+                <h2>0 引言</h2>
+                <a>Swing作为Java基础类的一部分，除了能够跨平台运行，还有一个优点就是能够切换各种风格主题（LookAndFeel）(￣▽￣)~*。</a><br>
+                <a>在javax.swing.plaf包下，我们可以很容易的找出Swing为我们预制的各种主题（但是预制的主题要么不好看要么不符合我们开发中程序所需要的风格(；д；)）。</a><br>
+                <a>但是鉴于目前国内对于这一方面的教程少之又少，大概是现在很少人用Swing做大型项目了吧，而小项目也不太注意风格的问题。</a><br>
+                <a>当然我们也可以直接覆写Swing控件的print()方法来达到自己的目的，但是直接从根源去编写Plaf不是更加高级（没事找事）吗？</a><br>
+                <a>于是没事找事的我开始尝试自己编写一个Swing的Plaf，并将踩过的坑分享给大家，也算是希望让Swing做出来的程序更加丰富吧(～￣▽￣)～。</a><br>
+                <a>注：编者目前也只是一名刚刚中考完的小朋友，对于Java也不是了解很多，这一遍也只是编者开发过程中的随笔。如果读者对内容有各种疑惑或者更好的建议，请一定要告诉我，每一个读者的建议对于我来说都很重要！再次感谢读者的来访！</a><br>
+                <a>你可以向我发送邮件（tea_ling@qq.com）来联系我哦ヾ(´ω｀)ﾉ！</a><br>
+                <br>
+
+                <h2>1 什么是LookAndFeel</h2>
+                <a>Swing作为一个轻量级可跨平台的GUI工具包，其本身绝大部分控件（除了JFrame, JDialog, JWindow等窗口继承于Window类之外）都继承于JComponent类，而Window和JComponent又都继承自Container类，这也就说明所有的Swing控件都可以由Graphics2D来绘制。</a><br>
+                <a>而LookAndFeel就是Swing绘制这些控件的核心，它控制着整个程序的风格，乃至绘图方式、颜色、以及控件不同状态下的不同展示方式。</a><br>
+                <a></a>
+
+            </div>
+        </div>
+    </body>
+</html>
