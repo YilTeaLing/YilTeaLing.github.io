@@ -1,31 +1,106 @@
 <html>
-    <head>
-        <meta charset="utf-8">
-        <link href="../base.css" rel="stylesheet" type="text/css">
-        <title>Teadit - 自己动手做一个SwingPlaf</title>
-    </head>
-    <body>
-        <h3 onClick="javascript: history.back(-1);">𝑩𝒂𝒄𝒌</h3>
-        <div>
-            <h1>—— 自己动手做一个SwingPlaf ——</h1>
-            <h4>TeaLing - 2020/7/30</h4>
-            <div style="text-align: left">
-                <h2>0 引言</h2>
-                <a>Swing作为Java基础类的一部分，除了能够跨平台运行，还有一个优点就是能够切换各种风格主题（LookAndFeel）(￣▽￣)~*。</a><br>
-                <a>在javax.swing.plaf包下，我们可以很容易的找出Swing为我们预制的各种主题（但是预制的主题要么不好看要么不符合我们开发中程序所需要的风格(；д；)）。</a><br>
-                <a>但是鉴于目前国内对于这一方面的教程少之又少，大概是现在很少人用Swing做大型项目了吧，而小项目也不太注意风格的问题。</a><br>
-                <a>当然我们也可以直接覆写Swing控件的print()方法来达到自己的目的，但是直接从根源去编写Plaf不是更加高级（没事找事）吗？</a><br>
-                <a>于是没事找事的我开始尝试自己编写一个Swing的Plaf，并将踩过的坑分享给大家，也算是希望让Swing做出来的程序更加丰富吧(～￣▽￣)～。</a><br>
-                <a>注：编者目前也只是一名刚刚中考完的小朋友，对于Java也不是了解很多，这一遍也只是编者开发过程中的随笔。如果读者对内容有各种疑惑或者更好的建议，请一定要告诉我，每一个读者的建议对于我来说都很重要！再次感谢读者的来访！</a><br>
-                <a>你可以向我发送邮件（tea_ling@qq.com）来联系我哦ヾ(´ω｀)ﾉ！</a><br>
+
+<head>
+    <meta charset="utf-8">
+    <link href="../base.css" rel="stylesheet" type="text/css">
+    <title>Teadit - 自己动手做一个SwingPlaf</title>
+</head>
+
+<body>
+    <h3 onClick="javascript: history.back(-1);">𝑩𝒂𝒄𝒌</h3>
+    <div>
+        <h1>—— 自己动手做一个SwingPlaf ——</h1>
+        <h4>TeaLing - 2020/7/30</h4>
+        <div class="text">
+            <h2>目录</h2>
+            <div class="text">
+                <a href="#0">0 引言</a><br>
+                <a href="#1">1 什么是LookAndFeel</a><br>
+                <a href="#2">2 LookAndFeel的构成</a><br>
                 <br>
-
-                <h2>1 什么是LookAndFeel</h2>
-                <a>Swing作为一个轻量级可跨平台的GUI工具包，其本身绝大部分控件（除了JFrame, JDialog, JWindow等窗口继承于Window类之外）都继承于JComponent类，而Window和JComponent又都继承自Container类，这也就说明所有的Swing控件都可以由Graphics2D来绘制。</a><br>
-                <a>而LookAndFeel就是Swing绘制这些控件的核心，它控制着整个程序的风格，乃至绘图方式、颜色、以及控件不同状态下的不同展示方式。</a><br>
-                <a></a>
-
             </div>
+
+            <h2 id="0">0 引言</h2>
+            <a>Swing作为Java基础类的一部分，除了能够跨平台运行，还有一个优点就是能够切换各种风格主题（LookAndFeel）(￣▽￣)~*。</a><br>
+            <a>在javax.swing.plaf包下，我们可以很容易的找出Swing为我们预制的各种主题（但是预制的主题要么不好看要么不符合我们开发中程序所需要的风格(；д；)）。</a><br>
+            <a>但是鉴于目前国内对于这一方面的教程少之又少，大概是现在很少人用Swing做大型项目了吧，而小项目也不太注意风格的问题。</a><br>
+            <a>当然我们也可以直接覆写Swing控件的print()方法来达到自己的目的，但是直接从根源去编写Plaf不是更加高级（没事找事）吗？</a><br>
+            <a>于是没事找事的我开始尝试自己编写一个Swing的Plaf，并将踩过的坑分享给大家，也算是希望让Swing做出来的程序更加丰富吧(～￣▽￣)～。</a><br>
+            <a>注：编者目前也只是一名刚刚中考完的小朋友，对于Java也不是了解很多，这一遍也只是编者开发过程中的随笔。如果读者对内容有各种疑惑或者更好的建议，请一定要告诉我，每一个读者的建议对于我来说都很重要！再次感谢读者的来访！</a><br>
+            <a>你可以向我发送邮件（tea_ling@qq.com）来联系我哦ヾ(´ω｀)ﾉ！</a><br>
+            <br>
+
+            <h2 id="1">1 什么是LookAndFeel</h2>
+            <a>Swing作为一个轻量级可跨平台的GUI工具包，其本身绝大部分控件（除了JFrame, JDialog, JWindow等窗口继承于Window类之外）都继承于JComponent类，而Window和JComponent又都继承自Container类，这也就说明所有的Swing控件都可以由Graphics2D来绘制。</a><br>
+            <a>而LookAndFeel就是Swing绘制这些控件的核心，它控制着整个程序的风格，乃至绘图方式、颜色、以及控件不同状态下的不同展示方式。</a><br>
+            <a>对于用户，要想使用LookAndFeel也是非常容易的，只需要在Swing程序启动之前调用</a><br>
+            <pre>UIManager.setLookAndFeel()</pre>
+            <a>方法，即可使用这些预制的或是导入其他人所制作的LookAndFeel。</a><br>
+            <a>值得注意的一点是，如果你是在绘制完控件后才调用的UIManager.setLookAndFeel()方法，那么你应该再加上一句</a><br>
+            <pre>SwingUtilities.updateComponentTreeUI()</pre>
+            <a>来重绘你的控件达到刷新的目的。</a><br>
+            <br>
+
+            <h2 id="2">2 LookAndFeel是如何工作的</h2>
+            <a>Swing采用的MVC模式（Model-View-Controller）来对控件进行管理，几乎所有的控件都可以被分解为这三部分。</a><br>
+            <a>以JButton为例，它可以这样被分解：</a><br>
+            <a>Model: ButtonModel, View: ButtonUI, Controller: JButton</a><br>
+            <a>其中，ButtonModel提供了JButton的模型，用于描述一个Button的各种属性，ButtonUI实现了JButton的绘制方式，用来被调用各种JButton的绘图操作，JButton则用于控制，用于定义一个JButton的行为。</a><br>
+            <a>而LookAndFeel就是通过这其中的ButtonUI类来绘制控件。每当需要绘制控件的时候，Swing就会产生一个PaintEvent事件到UI线程中。</a><br>
+            <a>这时，控件的paint()就会被调用来绘图，而在每个控件的paint()方法中又会调用到paintComponent()方法中的</a><br>
+            <pre>ui.update(scratchGraphics, this)</pre>
+            <a>方法，这个ui其实就是这个控件的UI类，调用的也自然就是UI类中的绘图方法了。</a><br>
+            <a>让我们以WindowsLookAndFeel为例，WindowsLookAndFeel位于com.sun.java.swing.plaf.windows包下，这个包中不仅包含WindowsLookAndFeel的主类，还有大量的控件UI类，其余的则是一些控件的属性配置和WindowsLookAndFeel检测不同平台所需的检测类。</a><br>
+            <a>如果读者有打开每一个类查看的话，会发现大部分的类都继承自Basic开头的各种类，这其实就是Swing默认的javax.swing.plaf.basic包下的BasicLookAndFeel，如果我们想要制作一个自己的LookAndFeel的话，也需要继承这些类。</a><br>
+            <a>其实Swing为了能够让控件们能够获取到属于自己的UI类，在LookAndFeel中存在着一个存放了大量键值对的名为uiDefaults的Object数组对象，然后将会由一个继承自HashTable的UIDefaults类进行收集。</a><br>
+            <pre>    protected void initClassDefaults(UIDefaults table)
+                {
+                    super.initClassDefaults(table);
+            
+                    final String windowsPackageName = "com.sun.java.swing.plaf.windows.";
+            
+                    Object[] uiDefaults = {
+                          "ButtonUI", windowsPackageName + "WindowsButtonUI",
+                        "CheckBoxUI", windowsPackageName + "WindowsCheckBoxUI",
+                "CheckBoxMenuItemUI", windowsPackageName + "WindowsCheckBoxMenuItemUI",
+                           "LabelUI", windowsPackageName + "WindowsLabelUI",
+                     "RadioButtonUI", windowsPackageName + "WindowsRadioButtonUI",
+             "RadioButtonMenuItemUI", windowsPackageName + "WindowsRadioButtonMenuItemUI",
+                    "ToggleButtonUI", windowsPackageName + "WindowsToggleButtonUI",
+                     "ProgressBarUI", windowsPackageName + "WindowsProgressBarUI",
+                          "SliderUI", windowsPackageName + "WindowsSliderUI",
+                       "SeparatorUI", windowsPackageName + "WindowsSeparatorUI",
+                       "SplitPaneUI", windowsPackageName + "WindowsSplitPaneUI",
+                         "SpinnerUI", windowsPackageName + "WindowsSpinnerUI",
+                      "TabbedPaneUI", windowsPackageName + "WindowsTabbedPaneUI",
+                        "TextAreaUI", windowsPackageName + "WindowsTextAreaUI",
+                       "TextFieldUI", windowsPackageName + "WindowsTextFieldUI",
+                   "PasswordFieldUI", windowsPackageName + "WindowsPasswordFieldUI",
+                        "TextPaneUI", windowsPackageName + "WindowsTextPaneUI",
+                      "EditorPaneUI", windowsPackageName + "WindowsEditorPaneUI",
+                            "TreeUI", windowsPackageName + "WindowsTreeUI",
+                         "ToolBarUI", windowsPackageName + "WindowsToolBarUI",
+                "ToolBarSeparatorUI", windowsPackageName + "WindowsToolBarSeparatorUI",
+                        "ComboBoxUI", windowsPackageName + "WindowsComboBoxUI",
+                     "TableHeaderUI", windowsPackageName + "WindowsTableHeaderUI",
+                   "InternalFrameUI", windowsPackageName + "WindowsInternalFrameUI",
+                     "DesktopPaneUI", windowsPackageName + "WindowsDesktopPaneUI",
+                     "DesktopIconUI", windowsPackageName + "WindowsDesktopIconUI",
+                     "FileChooserUI", windowsPackageName + "WindowsFileChooserUI",
+                            "MenuUI", windowsPackageName + "WindowsMenuUI",
+                        "MenuItemUI", windowsPackageName + "WindowsMenuItemUI",
+                         "MenuBarUI", windowsPackageName + "WindowsMenuBarUI",
+                       "PopupMenuUI", windowsPackageName + "WindowsPopupMenuUI",
+              "PopupMenuSeparatorUI", windowsPackageName + "WindowsPopupMenuSeparatorUI",
+                       "ScrollBarUI", windowsPackageName + "WindowsScrollBarUI",
+                        "RootPaneUI", windowsPackageName + "WindowsRootPaneUI"
+                    };
+            
+                    table.putDefaults(uiDefaults);
+                }</pre>
+            <a>Swing则是通过这个UIDefaults类来获取相应的UI类名，最终反射生成对应的UI类返回给控件的updateUI方法。</a>
         </div>
-    </body>
+    </div>
+</body>
+
 </html>
