@@ -12,11 +12,13 @@
         <h1>—— 自己动手做一个SwingPlaf ——</h1>
         <h4>TeaLing - 2020/7/30</h4>
         <div class="text">
-            <h2>目录</h2>
+            <h2 id="menu">目录</h2>
             <div class="text">
                 <a href="#0">0 引言</a><br>
                 <a href="#1">1 什么是LookAndFeel</a><br>
                 <a href="#2">2 LookAndFeel的构成</a><br>
+                <a href="#3">3 第一个LookAndFeel类</a><br>
+                <a>- </a><a href="#3.1">3.1 覆写initClassDefaults()方法</a><br>
                 <br>
             </div>
 
@@ -26,8 +28,15 @@
             <a>但是鉴于目前国内对于这一方面的教程少之又少，大概是现在很少人用Swing做大型项目了吧，而小项目也不太注意风格的问题。</a><br>
             <a>当然我们也可以直接覆写Swing控件的print()方法来达到自己的目的，但是直接从根源去编写Plaf不是更加高级（没事找事）吗？</a><br>
             <a>于是没事找事的我开始尝试自己编写一个Swing的Plaf，并将踩过的坑分享给大家，也算是希望让Swing做出来的程序更加丰富吧(～￣▽￣)～。</a><br>
+            <a>本例将通过编写一个Minecraft Bedrock Edition风格的LookAndFeel，一步一步教读者自动动手做一个自己的SwingPlaf。</a><br>
+            <a>当然本例中的LookAndFeel也已经上传至github（</a><a href="https://github.com/YilTeaLing/MinecraftLookAndFeel">MinecraftLookAndFeel</a><a>），感兴趣的话能否可以给我一个Star呢？</a><br>
             <a>注：编者目前也只是一名刚刚中考完的小朋友，对于Java也不是了解很多，这一遍也只是编者开发过程中的随笔。如果读者对内容有各种疑惑或者更好的建议，请一定要告诉我，每一个读者的建议对于我来说都很重要！再次感谢读者的来访！</a><br>
             <a>你可以向我发送邮件（tea_ling@qq.com）来联系我哦ヾ(´ω｀)ﾉ！</a><br>
+            <a>一些有用的信息：</a><br>
+            <div class="text">
+                <a>• 编者采用的Java版本：[jdk1.8.0_241]</a><br>
+                <a>• 编者采用的IDE版本：Eclipse IDE 2019-12 (4.14.0)</a><br>
+            </div>
             <br>
 
             <h2 id="1">1 什么是LookAndFeel</h2>
@@ -59,54 +68,378 @@
             <a>让我们以WindowsLookAndFeel为例，WindowsLookAndFeel位于com.sun.java.swing.plaf.windows包下，这个包中不仅包含WindowsLookAndFeel的主类，还有大量的控件UI类，其余的则是一些控件的属性配置和WindowsLookAndFeel检测不同平台所需的检测类。</a><br>
             <a>如果读者有打开每一个类查看的话，会发现大部分的类都继承自Basic开头的各种类，这其实就是Swing默认的javax.swing.plaf.basic包下的BasicLookAndFeel，如果我们想要制作一个自己的LookAndFeel的话，也需要继承这些类。</a><br>
             <a>其实Swing为了能够让控件们能够获取到属于自己的UI类，在LookAndFeel中存在着一个存放了大量键值对的名为uiDefaults的Object数组对象，然后将会由一个继承自HashTable的UIDefaults类进行收集。</a><br>
-            <div class="code">
+            <div class="code" id="classDefaults">
                 <pre>    protected void initClassDefaults(UIDefaults table)
-                    {
-                        super.initClassDefaults(table);
-                
-                        final String windowsPackageName = "com.sun.java.swing.plaf.windows.";
-                
-                        Object[] uiDefaults = {
-                              "ButtonUI", windowsPackageName + "WindowsButtonUI",
-                            "CheckBoxUI", windowsPackageName + "WindowsCheckBoxUI",
-                    "CheckBoxMenuItemUI", windowsPackageName + "WindowsCheckBoxMenuItemUI",
-                               "LabelUI", windowsPackageName + "WindowsLabelUI",
-                         "RadioButtonUI", windowsPackageName + "WindowsRadioButtonUI",
-                 "RadioButtonMenuItemUI", windowsPackageName + "WindowsRadioButtonMenuItemUI",
-                        "ToggleButtonUI", windowsPackageName + "WindowsToggleButtonUI",
-                         "ProgressBarUI", windowsPackageName + "WindowsProgressBarUI",
-                              "SliderUI", windowsPackageName + "WindowsSliderUI",
-                           "SeparatorUI", windowsPackageName + "WindowsSeparatorUI",
-                           "SplitPaneUI", windowsPackageName + "WindowsSplitPaneUI",
-                             "SpinnerUI", windowsPackageName + "WindowsSpinnerUI",
-                          "TabbedPaneUI", windowsPackageName + "WindowsTabbedPaneUI",
-                            "TextAreaUI", windowsPackageName + "WindowsTextAreaUI",
-                           "TextFieldUI", windowsPackageName + "WindowsTextFieldUI",
-                       "PasswordFieldUI", windowsPackageName + "WindowsPasswordFieldUI",
-                            "TextPaneUI", windowsPackageName + "WindowsTextPaneUI",
-                          "EditorPaneUI", windowsPackageName + "WindowsEditorPaneUI",
-                                "TreeUI", windowsPackageName + "WindowsTreeUI",
-                             "ToolBarUI", windowsPackageName + "WindowsToolBarUI",
-                    "ToolBarSeparatorUI", windowsPackageName + "WindowsToolBarSeparatorUI",
-                            "ComboBoxUI", windowsPackageName + "WindowsComboBoxUI",
-                         "TableHeaderUI", windowsPackageName + "WindowsTableHeaderUI",
-                       "InternalFrameUI", windowsPackageName + "WindowsInternalFrameUI",
-                         "DesktopPaneUI", windowsPackageName + "WindowsDesktopPaneUI",
-                         "DesktopIconUI", windowsPackageName + "WindowsDesktopIconUI",
-                         "FileChooserUI", windowsPackageName + "WindowsFileChooserUI",
-                                "MenuUI", windowsPackageName + "WindowsMenuUI",
-                            "MenuItemUI", windowsPackageName + "WindowsMenuItemUI",
-                             "MenuBarUI", windowsPackageName + "WindowsMenuBarUI",
-                           "PopupMenuUI", windowsPackageName + "WindowsPopupMenuUI",
-                  "PopupMenuSeparatorUI", windowsPackageName + "WindowsPopupMenuSeparatorUI",
-                           "ScrollBarUI", windowsPackageName + "WindowsScrollBarUI",
-                            "RootPaneUI", windowsPackageName + "WindowsRootPaneUI"
-                        };
-                
-                        table.putDefaults(uiDefaults);
-                    }</pre>
-            </div class="code">
-            <a>Swing则是通过这个UIDefaults类来获取相应的UI类名，最终反射生成对应的UI类返回给控件的updateUI方法。</a>
+    {
+        super.initClassDefaults(table);
+
+        final String windowsPackageName = "com.sun.java.swing.plaf.windows.";
+
+        Object[] uiDefaults = {
+              "ButtonUI", windowsPackageName + "WindowsButtonUI",
+            "CheckBoxUI", windowsPackageName + "WindowsCheckBoxUI",
+    "CheckBoxMenuItemUI", windowsPackageName + "WindowsCheckBoxMenuItemUI",
+               "LabelUI", windowsPackageName + "WindowsLabelUI",
+         "RadioButtonUI", windowsPackageName + "WindowsRadioButtonUI",
+ "RadioButtonMenuItemUI", windowsPackageName + "WindowsRadioButtonMenuItemUI",
+        "ToggleButtonUI", windowsPackageName + "WindowsToggleButtonUI",
+         "ProgressBarUI", windowsPackageName + "WindowsProgressBarUI",
+              "SliderUI", windowsPackageName + "WindowsSliderUI",
+           "SeparatorUI", windowsPackageName + "WindowsSeparatorUI",
+           "SplitPaneUI", windowsPackageName + "WindowsSplitPaneUI",
+             "SpinnerUI", windowsPackageName + "WindowsSpinnerUI",
+          "TabbedPaneUI", windowsPackageName + "WindowsTabbedPaneUI",
+            "TextAreaUI", windowsPackageName + "WindowsTextAreaUI",
+           "TextFieldUI", windowsPackageName + "WindowsTextFieldUI",
+       "PasswordFieldUI", windowsPackageName + "WindowsPasswordFieldUI",
+            "TextPaneUI", windowsPackageName + "WindowsTextPaneUI",
+          "EditorPaneUI", windowsPackageName + "WindowsEditorPaneUI",
+                "TreeUI", windowsPackageName + "WindowsTreeUI",
+             "ToolBarUI", windowsPackageName + "WindowsToolBarUI",
+    "ToolBarSeparatorUI", windowsPackageName + "WindowsToolBarSeparatorUI",
+            "ComboBoxUI", windowsPackageName + "WindowsComboBoxUI",
+         "TableHeaderUI", windowsPackageName + "WindowsTableHeaderUI",
+       "InternalFrameUI", windowsPackageName + "WindowsInternalFrameUI",
+         "DesktopPaneUI", windowsPackageName + "WindowsDesktopPaneUI",
+         "DesktopIconUI", windowsPackageName + "WindowsDesktopIconUI",
+         "FileChooserUI", windowsPackageName + "WindowsFileChooserUI",
+                "MenuUI", windowsPackageName + "WindowsMenuUI",
+            "MenuItemUI", windowsPackageName + "WindowsMenuItemUI",
+             "MenuBarUI", windowsPackageName + "WindowsMenuBarUI",
+           "PopupMenuUI", windowsPackageName + "WindowsPopupMenuUI",
+  "PopupMenuSeparatorUI", windowsPackageName + "WindowsPopupMenuSeparatorUI",
+           "ScrollBarUI", windowsPackageName + "WindowsScrollBarUI",
+            "RootPaneUI", windowsPackageName + "WindowsRootPaneUI"
+        };
+
+        table.putDefaults(uiDefaults);
+    }</pre>
+            </div>
+            <a>Swing则是通过这个UIDefaults类来获取相应的UI类名，最终反射生成对应的UI类返回给控件的updateUI方法。</a><br>
+            <br>
+
+            <h2 id="3">3 第一个LookAndFeel类</h2>
+            <a>首先我们先创建一个Java Project，因为是Minecraft风格的，所以我这里就简写为McPlaf。</a>
+            <a>我们需要为自己的Plaf新建一个包，这里我建议的包名格式是com.yourwebsite.swing.plaf.yourplafname，比如我的McPlaf，就应该是tealing.gitee.swing.plaf.minecraft</a><br>
+            <a>新建完成后，我们就可以向这个包中添加我们的第一个类了，我这里新建的就是MinecraftLookAndFeel，为了方便辨析，我这里强烈建议按照这种格式来命名，注意记得这个类要继承于BasicLookAndFeel。</a><br>
+            <a>之后IDE会提示我们补全一些缺省的方法，他们分别是：</a><br>
+            <div class="code">
+                <pre>	@Override
+	public String getName() {
+		//Plaf的名字
+		return "Minecraft";
+	}
+
+	@Override
+	public String getID() {
+		//Plaf的ID
+		return "Minecraft";
+	}
+
+	@Override
+	public String getDescription() {
+		//Plaf的介绍
+		return "The Minecraft Look and Feel";
+	}
+
+	@Override
+	public boolean isNativeLookAndFeel() {
+        //是否为本地LookAndFeel
+        //一般与系统无关的LookAndFeel都直接返回true
+		return true;
+	}
+
+	@Override
+	public boolean isSupportedLookAndFeel() {
+        //是否是支持的LookAndFeel
+        //如果为否在UIManager.setLookAndFeel()调用的时候会直接抛出UnsupportedLookAndFeelException异常
+        //因为我这里的绘制不需要做平台的检测，所以就直接为true
+		return true;
+	}</pre>
+            </div>
+            <a>现在我们可以新建一个测试类并且使用UIManager.setLookAndFeel(new MinecraftLookAndFeel())方法来使用我们的LookAndFeel了，不过现在我们什么UI类都没有添加，所以展示的实际上是BasicLookAndFeel的效果。</a><br>
+            <a>以下是我自己做的一个测试类，基本囊括了Swing的所有控件，读者有兴趣可以自己复制下来运行查看效果。</a><br>
+            <div class="code">
+                <pre>package tealing.gitee.swing.plaf.minecraft;
+
+import java.awt.BorderLayout;
+
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
+import javax.swing.JDesktopPane;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPasswordField;
+import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSeparator;
+import javax.swing.JSlider;
+import javax.swing.JSpinner;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+public class TestFrame {
+	private static void init() {
+		try {
+			UIManager.setLookAndFeel(new MinecraftLookAndFeel());
+			//UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		JFrame frame = new JFrame("JFrame");
+		
+		Box buttonBox1 = Box.createVerticalBox();
+		buttonBox1.add(new JLabel("JLabel1"));
+		buttonBox1.add(new JButton("JButton1"));
+		buttonBox1.add(new JButton("JButton2"));
+		buttonBox1.add(new JButton("JButton3"));
+		buttonBox1.add(new JLabel("JLabel2"));
+		buttonBox1.add(new JCheckBox("JCheckBox1"));
+		buttonBox1.add(new JCheckBox("JCheckBox2"));
+		buttonBox1.add(new JCheckBox("JCheckBox3"));
+		buttonBox1.add(new JCheckBox("JCheckBox4"));
+		buttonBox1.add(new JCheckBox("JCheckBox5"));
+		buttonBox1.add(new JComboBox<String>());
+		
+		JDesktopPane dp = new JDesktopPane();
+		JInternalFrame frame1 = new JInternalFrame("Hi");
+		frame1.add(new JButton("JButton in InternalFrame"));
+		dp.add(frame1);
+		buttonBox1.add(dp);
+		
+		Box buttonBox2 = Box.createVerticalBox();
+		buttonBox2.add(new JLabel("JLabel4"));
+		buttonBox2.add(new JRadioButton("JRadioButton1"));
+		buttonBox2.add(new JRadioButton("JRadioButton2"));
+		buttonBox2.add(new JRadioButton("JRadioButton3"));
+		buttonBox2.add(new JLabel("JLabel5"));
+		buttonBox2.add(new JToggleButton("JToggleButton1"));
+		buttonBox2.add(new JToggleButton("JToggleButton2"));
+		buttonBox2.add(new JToggleButton("JToggleButton3"));
+		buttonBox2.add(new JLabel("JLabel6"));
+		
+		Box textBox = Box.createHorizontalBox();
+		textBox.add(new JLabel("JLabel3"));
+		textBox.add(new JTextField("JTextField1"));
+		textBox.add(new JTextField("JTextField2"));
+		textBox.add(new JTextField("JTextField3"));
+		textBox.add(new JLabel("JLabel4"));
+		textBox.add(new JPasswordField());
+		textBox.add(new JLabel("JLabel8"));
+		textBox.add(new JSpinner());
+		textBox.add(new JSpinner());
+		textBox.add(new JSpinner());
+		
+		JToolBar toolBar = new JToolBar();
+		toolBar.add(new JButton("BtnInToolBar1"));
+		toolBar.add(new JButton("BtnInToolBar2"));
+		buttonBox1.add(toolBar);
+		JMenuBar menuBar = new JMenuBar();
+		JMenu menu1 = new JMenu("JMenu1");
+		menu1.add(new JMenuItem("JMenuItem1"));
+		menu1.add(new JMenuItem("JMenuItem2"));
+		menu1.add(new JMenuItem("JMenuItem3"));
+		menu1.add(new JMenuItem("JMenuItem4"));
+		menu1.add(new JSeparator());
+		menu1.add(new JRadioButtonMenuItem("JRadioButtonMenuItem1"));
+		menu1.add(new JRadioButtonMenuItem("JRadioButtonMenuItem1"));
+		menu1.add(new JRadioButtonMenuItem("JRadioButtonMenuItem1"));
+		menu1.add(new JSeparator());
+		menu1.add(new JCheckBoxMenuItem("JCheckBoxMenuItem1"));
+		menu1.add(new JCheckBoxMenuItem("JCheckBoxMenuItem2"));
+		menu1.add(new JCheckBoxMenuItem("JCheckBoxMenuItem3"));
+		JMenu menu6 = new JMenu("JMenu6");
+		menu6.add(new JMenuItem("JMenu6"));
+		menu6.add(new JMenuItem("JMenu7"));
+		menu6.add(new JMenuItem("JMenu8"));
+		menu1.add(menu6);
+		menuBar.add(menu1);
+		menuBar.add(new JMenu("JMenu2"));
+		menuBar.add(new JMenu("JMenu3"));
+		menuBar.add(new JMenu("JMenu4"));
+		menuBar.add(new JMenu("JMenu5"));
+		
+		frame.setJMenuBar(menuBar);
+		
+		Box bottomBox = Box.createHorizontalBox();
+		JProgressBar progressBar = new JProgressBar(0, 10);
+		JSlider slider = new JSlider(0, 10);
+		slider.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				progressBar.setValue(slider.getValue());
+				
+			}
+		});
+		bottomBox.add(progressBar);
+		buttonBox2.add(slider);
+		buttonBox2.add(new JLabel("JLabel7"));
+		buttonBox2.add(new JTree());
+		buttonBox2.add(new JEditorPane());
+		
+		JSplitPane splitPane = new JSplitPane();
+		splitPane.setLeftComponent(new JTextArea("JTextArea"));
+		splitPane.setRightComponent(new JTextPane());
+		
+		frame.add(buttonBox1, BorderLayout.WEST);
+		frame.add(buttonBox2, BorderLayout.EAST);
+		frame.add(bottomBox, BorderLayout.SOUTH);
+		frame.add(splitPane, BorderLayout.CENTER);
+		frame.add(textBox, BorderLayout.NORTH);
+		
+		frame.pack();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
+	}
+	
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				init();
+			}
+		});
+	}
+}
+</pre>
+            </div>
+            <a>上面我们已经知道了，Swing是在LookAndFeel的initClassDefaults(UIDefaults table)方法中获取每个控件的UI类的，所以我们要想绘制自定义风格的控件，就要覆写这一个类。</a><br>
+            <a>在LookAndFeel中，我们除了能够自定义控件的绘制方法，我们还可以自定义整个程序的默认颜色以及字体等属性，这些分别需要我们覆写LookAndFeel类中的initSystemColorDefaults(UIDefaults table)和initComponentDefaults(UIDefaults table)方法。</a><br>
+            <a>当然有些时候我们需要在装载和卸载LookAndFeel处理一些自定义适应的数据处理，这些我们可以在LookAndFeel中覆写initialize()和uninitialize()来完成。</a><br>
+            <a>当我们完成之后，现在的LookAndFeel类看起来应该是这个样子的：</a><br>
+            <div class="code">
+                <pre>package tealing.gitee.swing.plaf.minecraft;
+
+import javax.swing.UIDefaults;
+import javax.swing.plaf.basic.BasicLookAndFeel;
+
+public class MinecraftLookAndFeel extends BasicLookAndFeel {
+	@Override
+	public String getName() {
+		return "Minecraft";
+	}
+
+	@Override
+	public String getID() {
+		return "Minecraft";
+	}
+
+	@Override
+	public String getDescription() {
+		return "The Minecraft Look and Feel";
+	}
+
+	@Override
+	public boolean isNativeLookAndFeel() {
+		return true;
+	}
+
+	@Override
+	public boolean isSupportedLookAndFeel() {
+		return true;
+	}
+	
+	@Override
+	public void initialize() {
+		super.initialize();
+	}
+	
+	@Override
+	protected void initClassDefaults(UIDefaults table) {
+		super.initClassDefaults(table);
+	}
+	
+	@Override
+	protected void initSystemColorDefaults(UIDefaults table) {
+		super.initSystemColorDefaults(table);
+	}
+	
+	@Override
+	protected void initComponentDefaults(UIDefaults table) {
+		super.initComponentDefaults(table);
+	}
+	
+	@Override
+	public void uninitialize() {
+		super.uninitialize();
+	}
+}
+</pre>
+            </div>
+            <br>
+
+            <h2 id="3.1">3.1 覆写initClassDefaults()方法</h2>
+            <a>现在是时候为我们的控件绑定UI类了，其实看了</a><a href="#classDefaults">WindowsLookAndFeel类对initClassDefaults()方法的覆写</a><a>，读者应该不难推测出这个方法的写法。</a><br>
+            <a>由于此方法中的规则性，我们只需要作出很小很小的修改，替换掉所有的Windows并改成我们自己的名字（当然只要能匹配到你的类名即可，但我强烈推荐这一种写法）。</a><br>
+            <a>（一个人尽皆知的小提示：在Eclipse中右键变量名选择Refactor - Rename...即可快速重命名所有引用到此变量的变量名。）</a><br>
+            <a>比如我的initClassDefaults(UIDefaults table)方法覆写后就应该是这样的：</a><br>
+            <div class="code">
+                <pre>	@Override
+	protected void initClassDefaults(UIDefaults table) {
+        super.initClassDefaults(table);
+
+        final String minecraftPackageName = "tealing.gitee.swing.plaf.minecraft.";
+
+        Object[] uiDefaults = {
+              "ButtonUI", minecraftPackageName + "MinecraftButtonUI",
+            "CheckBoxUI", minecraftPackageName + "MinecraftCheckBoxUI",
+    "CheckBoxMenuItemUI", minecraftPackageName + "MinecraftCheckBoxMenuItemUI",
+               "LabelUI", minecraftPackageName + "MinecraftLabelUI",
+         "RadioButtonUI", minecraftPackageName + "MinecraftRadioButtonUI",
+ "RadioButtonMenuItemUI", minecraftPackageName + "MinecraftRadioButtonMenuItemUI",
+        "ToggleButtonUI", minecraftPackageName + "MinecraftToggleButtonUI",
+         "ProgressBarUI", minecraftPackageName + "MinecraftProgressBarUI",
+              "SliderUI", minecraftPackageName + "MinecraftSliderUI",
+           "SeparatorUI", minecraftPackageName + "MinecraftSeparatorUI",
+           "SplitPaneUI", minecraftPackageName + "MinecraftSplitPaneUI",
+             "SpinnerUI", minecraftPackageName + "MinecraftSpinnerUI",
+          "TabbedPaneUI", minecraftPackageName + "MinecraftTabbedPaneUI",
+            "TextAreaUI", minecraftPackageName + "MinecraftTextAreaUI",
+           "TextFieldUI", minecraftPackageName + "MinecraftTextFieldUI",
+       "PasswordFieldUI", minecraftPackageName + "MinecraftPasswordFieldUI",
+            "TextPaneUI", minecraftPackageName + "MinecraftTextPaneUI",
+          "EditorPaneUI", minecraftPackageName + "MinecraftEditorPaneUI",
+                "TreeUI", minecraftPackageName + "MinecraftTreeUI",
+             "ToolBarUI", minecraftPackageName + "MinecraftToolBarUI",
+    "ToolBarSeparatorUI", minecraftPackageName + "MinecraftToolBarSeparatorUI",
+            "ComboBoxUI", minecraftPackageName + "MinecraftComboBoxUI",
+         "TableHeaderUI", minecraftPackageName + "MinecraftTableHeaderUI",
+       "InternalFrameUI", minecraftPackageName + "MinecraftInternalFrameUI",
+         "DesktopPaneUI", minecraftPackageName + "MinecraftDesktopPaneUI",
+         "DesktopIconUI", minecraftPackageName + "MinecraftDesktopIconUI",
+         "FileChooserUI", minecraftPackageName + "MinecraftFileChooserUI",
+                "MenuUI", minecraftPackageName + "MinecraftMenuUI",
+            "MenuItemUI", minecraftPackageName + "MinecraftMenuItemUI",
+             "MenuBarUI", minecraftPackageName + "MinecraftMenuBarUI",
+           "PopupMenuUI", minecraftPackageName + "MinecraftPopupMenuUI",
+  "PopupMenuSeparatorUI", minecraftPackageName + "MinecraftPopupMenuSeparatorUI",
+           "ScrollBarUI", minecraftPackageName + "MinecraftScrollBarUI",
+            "RootPaneUI", minecraftPackageName + "MinecraftRootPaneUI"
+        };
+
+        table.putDefaults(uiDefaults);
+	}</pre>
+            </div>
+
         </div>
     </div>
 </body>
