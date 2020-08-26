@@ -2,62 +2,102 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <title>Teable - Maths</title>
     <style>
         * {
             margin: 0;
             padding: 0;
+            border-radius: 7px;
+        }
+
+        #contextPanel * {
+            background-color: rgb(80,80,80);
+            color: rgb(204,204,204);
         }
 
         body {
-            background-color: rgb(230, 230, 230);
+            background-color: rgb(37, 37, 38);
         }
     </style>
 </head>
 
 <body>
     <div id="wrapper">
-        <div style="position: fixed;width: 150px;left: 0;top: 0;bottom: 0;">
-            <table style="border-spacing: 0;width: 100%;">
+        <div id="sidebar"
+            style="background-color: rgb(60,60,60); position: fixed;width: 145px;left: 5px;top: 5px;bottom: 5px;z-index: 1;">
+            <table style="width: 100%;color: rgb(204,204,204);text-align: center;">
                 <tr>
-                    <th onclick="tabClick(this)">工具</th>
-                    <th onclick="tabClick(this)">文件</th>
+                    <td onclick="changeTab(this, 0)">工具</td>
+                    <td onclick="changeTab(this, 1)">文件</td>
                 </tr>
                 <tr>
-                    <th onclick="tabClick(this)">编辑</th>
-                    <th onclick="tabClick(this)">变量</th>
+                    <td onclick="changeTab(this, 2)">编辑</td>
+                    <td onclick="changeTab(this, 3)">变量</td>
                 </tr>
                 <tr>
-                    <th onclick="tabClick(this)">脚本</th>
-                    <th onclick="tabClick(this)">关于</th>
+                    <td onclick="changeTab(this, 4)">脚本</td>
+                    <td onclick="changeTab(this, 5)">关于</td>
                 </tr>
             </table>
             <hr>
-            <div style="margin: 5px">
-                <button>Point</button>
-                <button>Line</button>
-            </div>
+            <div id="contextPanel"></div>
             <hr>
             <div>
-                <input><button>Confirm</button>
-                <input><button>Confirm</button>
-                <div style="margin: 5px;position: absolute;bottom: 0;width: 100%;">
-
+                <a>监视器</a>
+                <div style="width: 100%;background-color: cornsilk;">
+                    <a>awa123</a>
                 </div>
             </div>
         </div>
 
+        <div id="pad"
+            style="position: fixed;left:155px;right: 5px;top: 5px;bottom: 5px;height: 100%-10px;background-color: rgb(30,30,30);z-index: 0;">
+            <div id="copyrightClaim"
+                style="position: fixed;text-align: center;bottom: 10px;right: 10px;color: rgb(156,156,156);">
+                <p>CopyRight © 2020 teable.top All Rights Reserved.</p>
+            </div>
+        </div>
+
     </div>
+
     <script>
-        function tabClick(element) {
+        //window.open("pages/test.html", "newwindow", "height=369, width=256, top=512, left=1024, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no");
+
+        var toolPanel = document.createElement("div");
+        var filePanel = document.createElement("div");
+        var editPanel = document.createElement("div");
+        var varPanel = document.createElement("div");
+        var scriptPanel = document.createElement("div");
+        var aboutPanel = document.createElement("div");
+
+        toolPanel.innerHTML = "<p>移动工具</p><p>点工具</p><p>线工具</p><p>圆工具</p><p>多边形工具</p><p>自定义工具</p><p>文本工具</p><p>一元方程计算器</p><p>多元方程计算器</p><p>不等式计算器</p><p>函数计算器</p><p>化学计算器</p>";
+        filePanel.innerHTML = "<p>打开</p><p>保存</p><p>另存为</p><p>上传至服务器</p><p>从服务器打开</p><p>打印</p><p>导入为</p><p>导出为</p><p>关闭当前文档</p><p>关闭所有文档</p>";
+        editPanel.innerHTML = "<p>撤销</p><p>重做</p><p>剪切</p><p>复制</p><p>粘贴</p><p>删除</p><p>全选</p><p>反选</p><p>选择父对象</p><p>选择子对象</p><p>属性</p><p>参数</p>";
+        varPanel.innerHTML = "<p>新建变量</p><p>删除变量</p><p>变量控制台</p>";
+        scriptPanel.innerHTML = "<p>新建脚本</p><p>打开脚本</p><p>从外部导入脚本</p><p>从服务器导入脚本</p><p>导出脚本</p><p>脚本控制台</p>";
+        aboutPanel.innerHTML = "<p>Github地址</p><p>联系我们</p>";
+
+        var panelList = [toolPanel, filePanel, editPanel, varPanel, scriptPanel, aboutPanel];
+
+        function clickTab(element) {
             var children = element.parentElement.parentElement.children;
             for (i = 0; i < children.length; i++) {
                 for (j = 0; j < children[i].children.length; j++) {
-                    children[i].children[j].style.backgroundColor = "rgb(250,250,250)";
+                    children[i].children[j].style.backgroundColor = "rgb(60,60,60)";
                 }
             }
-            element.style.backgroundColor = "rgb(127,127,127)";
+            element.style.backgroundColor = "rgb(80,80,80)";
+        }
+
+        function changeTab(element, id) {
+            var contextPanel = document.getElementById("contextPanel");
+            var c = contextPanel.children[0];
+            if (!c) contextPanel.appendChild(panelList[id]);
+            else contextPanel.replaceChild(panelList[id], c);
+            clickTab(element);
         }
     </script>
 </body>
