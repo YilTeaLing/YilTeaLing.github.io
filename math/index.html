@@ -178,23 +178,19 @@
         }
 
         function fadeTab(oldOne, newOne) {
-            if (a1) a1.stop(false, true);
-            if (a2) a2.stop(false, true);
-            if (oldOne) {
-                var o = $(oldOne);
-                a1 = o;
-                o.css("left", 0);
-                o.animate({ left: -160 }, 250, "easeOutCirc", function () { o.css("display", "none") });
-            }
+            if (ani) ani.stop(false, true);
+            if (oldOne) { $(oldOne).css("display", "none"); }
             if (newOne) {
                 var n = $(newOne);
                 n.css("display", "block")
-                a2 = n;
+                n.css("opacity", 0);
+                ani = n;
                 n.css("left", 160)
-                n.animate({ left: 0 }, 250, "easeOutCirc");
+                n.animate({ left: 0 }, { duration: 300, queue: false,easing:"easeOutCirc"});
+                n.animate({ opacity: 1 }, { duration: 600, queue: false });
             }
         }
-        var a1, a2;
+        var ani;
     </script>
 </body>
 
