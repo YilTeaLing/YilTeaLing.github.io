@@ -3,60 +3,125 @@
 
 <head>
     <meta charset="UTF-8">
+    <script src="../jquery-min.js"></script>
     <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+        content="width=device-width,height=device-height, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <title>Teable - Maths</title>
     <style>
-        * {
+        html,
+        body,
+        tr,
+        td {
             margin: 0;
             padding: 0;
-            border-radius: 7px;
         }
 
-        #contextPanel * {
-            background-color: rgb(80,80,80);
-            color: rgb(204,204,204);
+        html,
+        body,
+        #wrapper {
+            height: 100%;
+            width: 100%;
         }
 
-        body {
-            background-color: rgb(37, 37, 38);
+        #contextPanel {
+            margin-top: 5px;
+            width: 100%;
+            position: absolute;
+        }
+
+        #contextPanel p {
+            width: 100%;
+            margin: 2px 5px 2px 5px;
+            padding: 0 0 0 5px;
+        }
+
+        #sidebar {
+            height: 100%;
+            width: 160px;
+            background: rgb(173, 234, 255);
+            position: absolute;
+        }
+
+        #tabSelect tr td {
+            position: relative;
+            height: 45px;
+            cursor: pointer;
+            text-align: center;
+            color: white;
+            width: 50%;
+            font-size: 22px;
+        }
+
+        .tabNormal {
+            background-color: rgb(0, 195, 255);
+        }
+
+        .tabSelected {
+            background-color: rgb(0, 17, 255);
+            ;
+        }
+
+        #tabSelect tr td.tabNormal:hover {
+            background-color: rgb(103, 220, 255);
+        }
+
+        #tabSelect tr td.tabNormal:active {
+            background-color: rgb(157, 232, 255);
+        }
+
+        #tabSelect {
+            width: 100%;
+            border-spacing: 1px;
+        }
+
+        #pad {
+            position: fixed;
+            left: 160px;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            height: 100%;
+            background-color: rgb(220, 220, 220);
+            z-index: 0;
+        }
+
+        #copyrightClaim {
+            position: fixed;
+            text-align: center;
+            bottom: 10px;
+            right: 10px;
+            color: rgb(156, 156, 156);
+        }
+
+        #copyrightClaim>p {
+            margin: 0;
+            padding: 0;
         }
     </style>
 </head>
 
 <body>
     <div id="wrapper">
-        <div id="sidebar"
-            style="background-color: rgb(60,60,60); position: fixed;width: 145px;left: 5px;top: 5px;bottom: 5px;z-index: 1;">
-            <table style="width: 100%;color: rgb(204,204,204);text-align: center;">
+        <div id="sidebar">
+            <table id="tabSelect">
                 <tr>
-                    <td onclick="changeTab(this, 0)">工具</td>
-                    <td onclick="changeTab(this, 1)">文件</td>
+                    <td id="tabTools" onclick="changeTab($(this), 0)">工具</td>
+                    <td id="tabFile" onclick="changeTab($(this), 1)">文件</td>
                 </tr>
                 <tr>
-                    <td onclick="changeTab(this, 2)">编辑</td>
-                    <td onclick="changeTab(this, 3)">变量</td>
+                    <td id="tabEdit" onclick="changeTab($(this), 2)">编辑</td>
+                    <td id="tabVar" onclick="changeTab($(this), 3)">变量</td>
                 </tr>
                 <tr>
-                    <td onclick="changeTab(this, 4)">脚本</td>
-                    <td onclick="changeTab(this, 5)">关于</td>
+                    <td id="tabScript" onclick="changeTab($(this), 4)">脚本</td>
+                    <td id="tabAbout" onclick="changeTab($(this), 5)">关于</td>
                 </tr>
             </table>
-            <hr>
             <div id="contextPanel"></div>
-            <hr>
-            <div>
-                <a>监视器</a>
-                <div style="width: 100%;background-color: cornsilk;">
-                    <a>awa123</a>
-                </div>
-            </div>
         </div>
 
-        <div id="pad"
-            style="position: fixed;left:155px;right: 5px;top: 5px;bottom: 5px;height: 100%-10px;background-color: rgb(30,30,30);z-index: 0;">
-            <div id="copyrightClaim"
-                style="position: fixed;text-align: center;bottom: 10px;right: 10px;color: rgb(156,156,156);">
+        <div id="pad">
+            <div id="copyrightClaim">
                 <p>CopyRight © 2020 teable.top All Rights Reserved.</p>
             </div>
         </div>
@@ -64,14 +129,14 @@
     </div>
 
     <script>
-        //window.open("pages/test.html", "newwindow", "height=369, width=256, top=512, left=1024, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no");
-
+        var selectedPanel = $("tabAbout");
         var toolPanel = document.createElement("div");
         var filePanel = document.createElement("div");
         var editPanel = document.createElement("div");
         var varPanel = document.createElement("div");
         var scriptPanel = document.createElement("div");
         var aboutPanel = document.createElement("div");
+        var contextPanel;
 
         toolPanel.innerHTML = "<p>移动工具</p><p>点工具</p><p>线工具</p><p>圆工具</p><p>多边形工具</p><p>自定义工具</p><p>文本工具</p><p>一元方程计算器</p><p>多元方程计算器</p><p>不等式计算器</p><p>函数计算器</p><p>化学计算器</p>";
         filePanel.innerHTML = "<p>打开</p><p>保存</p><p>另存为</p><p>上传至服务器</p><p>从服务器打开</p><p>打印</p><p>导入为</p><p>导出为</p><p>关闭当前文档</p><p>关闭所有文档</p>";
@@ -81,24 +146,48 @@
         aboutPanel.innerHTML = "<p>Github地址</p><p>联系我们</p>";
 
         var panelList = [toolPanel, filePanel, editPanel, varPanel, scriptPanel, aboutPanel];
-
+        $(document).ready(function () {
+            contextPanel = $("#contextPanel");
+            panelList.forEach(element => {
+                var e = $(element); e.css("position", "absolute");
+                e.css("left", 160);
+                contextPanel.append(element);
+            });
+            changeTab($("#tabAbout"), 5);
+        });
         function clickTab(element) {
-            var children = element.parentElement.parentElement.children;
-            for (i = 0; i < children.length; i++) {
-                for (j = 0; j < children[i].children.length; j++) {
-                    children[i].children[j].style.backgroundColor = "rgb(60,60,60)";
-                }
-            }
-            element.style.backgroundColor = "rgb(80,80,80)";
+            $("#tabSelect td").toggleClass("tabSelected", false);
+            $("#tabSelect td").toggleClass("tabNormal", true);
+            element.toggleClass("tabSelected", true);
+            element.toggleClass("tabNormal", false);
         }
 
         function changeTab(element, id) {
-            var contextPanel = document.getElementById("contextPanel");
-            var c = contextPanel.children[0];
-            if (!c) contextPanel.appendChild(panelList[id]);
-            else contextPanel.replaceChild(panelList[id], c);
-            clickTab(element);
+            if (panelList[id] != selectedPanel) {
+                var n = panelList[id];
+                fadeTab(selectedPanel, n);
+                selectedPanel = n;
+                clickTab(element);
+            }
         }
+
+        function fadeTab(oldOne, newOne) {
+            if (a1) a1.stop(false, true);
+            if (a2) a2.stop(false, true);
+            if (oldOne) {
+                var o = $(oldOne);
+                a1 = o;
+                o.css("left", 0);
+                o.animate({ left: -160 }, 500);
+            }
+            if (newOne) {
+                var n = $(newOne);
+                a2 = n;
+                n.css("left", 160)
+                n.animate({ left: 0 }, 300);
+            }
+        }
+        var a1, a2;
     </script>
 </body>
 
