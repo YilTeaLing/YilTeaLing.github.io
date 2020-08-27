@@ -43,6 +43,8 @@
             width: 160px;
             background: rgb(173, 234, 255);
             position: absolute;
+            transition: left 0.5s ease-in-out;
+            left: 0;
         }
 
         #tabSelect tr td {
@@ -86,6 +88,7 @@
             height: 100%;
             background-color: rgb(220, 220, 220);
             z-index: 0;
+            transition: ease-in-out left 0.5s;
         }
 
         #copyrightClaim {
@@ -119,10 +122,23 @@
             cursor: pointer;
             font-size: larger;
             top: calc(50vh - 40px);
+            transition: ease-in-out left 0.5s;
         }
 
         .hide-button:hover {
             background-color: rgba(0,0,0,.5);
+        }
+
+        #contextPanel div p {
+            cursor: pointer;
+            position: relative;
+            left: 0;
+            transition: all 0.3s ease-in-out;
+            color: #222222;
+        }
+
+        #contextPanel div p:hover {
+            left: 10px;
         }
     </style>
 </head>
