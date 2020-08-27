@@ -26,7 +26,7 @@
         }
 
         #contextPanel {
-            margin-top: 5px;
+            /* margin-top: 5px; */
             width: 100%;
             height: auto;
             position: absolute;
@@ -139,6 +139,34 @@
 
         #contextPanel div p:hover {
             left: 10px;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        #contextPanel div {
+            overflow-y: scroll;
+            overflow-x: hidden;
+            height: calc(100vh - 151px);
+            padding: 5px 0;
+            /* border-top: solid 1px #fff; */
+            /* border-bottom: solid 1px #fff; */
+        }
+        
+        #contextPanel div::-webkit-scrollbar {
+            width: 5px;
+            /* background-color: white; */
+        }
+
+        #contextPanel div::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,.2);
+            width: 5px;
+            border-radius: 2.5px;
+        }
+
+        #contextPanel div::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(0,0,0,.4);
         }
     </style>
 </head>
