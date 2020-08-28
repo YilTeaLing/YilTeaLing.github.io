@@ -43,7 +43,7 @@
         #sidebar {
             height: 100vh;
             width: 160px;
-            background: rgb(173, 234, 255);
+            background: rgb(19, 109, 130);
             position: absolute;
             transition: left 0.5s ease-in-out;
             left: 0;
@@ -60,20 +60,20 @@
         }
 
         .tabNormal {
-            background-color: rgb(0, 195, 255);
+            background-color: rgb(0, 153, 188);
         }
 
         .tabSelected {
-            background-color: rgb(0, 17, 255);
+            background-color: rgb(0, 122, 204);
             ;
         }
 
         #tabSelect tr td.tabNormal:hover {
-            background-color: rgb(103, 220, 255);
+            background-color: rgb(60, 170, 200);
         }
 
         #tabSelect tr td.tabNormal:active {
-            background-color: rgb(157, 232, 255);
+            background-color: rgb(70, 200, 235);
         }
 
         #tabSelect {
@@ -107,9 +107,9 @@
         }
 
         .hide-button {
-            background-color: rgba(0,0,0,.3);
-            width: 40px;
-            height: 80px;
+            background-color: rgba(30, 64, 72, 0.5);
+            width: 30px;
+            height: 60px;
             position: absolute;
             left: 160px;
             z-index: 114514;
@@ -117,18 +117,19 @@
             user-select: none;
             -moz-user-select: none;
             -webkit-user-select: none;
-            line-height: 80px;
-            border-top-right-radius: 40px;
-            border-bottom-right-radius: 40px;
+            line-height: 60px;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
             color: white;
             cursor: pointer;
             font-size: larger;
+            font-family: Consolas;
             top: calc(50vh - 40px);
             transition: ease-in-out left 0.5s;
         }
 
         .hide-button:hover {
-            background-color: rgba(0,0,0,.5);
+            background-color: rgba(30, 64, 72, 0.3);
         }
 
         #contextPanel div p {
@@ -136,7 +137,7 @@
             position: relative;
             left: 0;
             transition: all 0.3s ease-in-out;
-            color: #222222;
+            color: rgb(208, 226, 230);
         }
 
         #contextPanel div p:hover {
@@ -239,7 +240,7 @@
             var _name = item[0]; 
             var _res = ""; 
             for (var i=0;i<_name.length;i++){
-                _res = _res + "<p class='p-button'>" + _name[i] + "</p>";
+                _res = _res + "<p class='p-button' onclick='itemClick(this)'>" + _name[i] + "</p>";
             }
             return(_res);
         }
@@ -303,6 +304,10 @@
                 n.animate({ left: 0 }, { duration: 300, queue: false,easing:"easeOutCirc"});
                 n.animate({ opacity: 1 }, { duration: 600, queue: false });
             }
+        }
+
+        function itemClick(element) {
+            //点按后将对应的p-button的background-color切换为rgb(73, 142, 158)
         }
         var ani;
 
