@@ -283,6 +283,30 @@
         BG_YELLOW = "rgba(207, 207, 76, 0.8)"; 
         BG_RED = "rgba(200, 70, 70, .8);"; 
 
+        /* 这里_title不是必须要输入的，默认为“信息” */
+        /* 至于_args，这一项以后再作打算，相当于Python里用*_args吧 */
+        function showInfo(content, _title, _args) {
+            __title = "信息"; 
+            if (_title){
+                __title = _title; 
+            }
+            return (defMessage(__title, content, 3000, BG_BLUE)); 
+        }
+        function showWarn(content, _title, _args) {
+            __title = "警告"; 
+            if (_title){
+                __title = _title; 
+            }
+            return (defMessage(__title, content, 3000, BG_YELLOW)); 
+        }
+        function showError(content, _title, _args) {
+            __title = "错误"; 
+            if (_title){
+                __title = _title; 
+            }
+            return (defMessage(__title, content, 3000, BG_RED)); 
+        }
+
         /* 列表套列表，在后面添加功能什么的时候会容易一些吧，就不用把那么多<p></p>改掉了 */
         var _items = {
             toolPanel: [
