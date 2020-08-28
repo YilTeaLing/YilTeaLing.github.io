@@ -169,6 +169,36 @@
         #contextPanel div::-webkit-scrollbar-thumb:hover {
             background-color: rgba(0,0,0,.4);
         }
+
+        /* Message box */
+        .message-container {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 500px;
+            padding: 10px;
+        }
+
+        .message-item {
+            background-color: #222222;
+            height: 70px;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            right: -520px;
+            opacity: 0;
+            transition: all ease-in-out 0.8s; 
+        }
+
+        .message-title {
+            font-size: 20px;
+        }
+
+        .message-content {
+            color: #dddddd;
+        }
     </style>
 </head>
 
@@ -206,9 +236,42 @@
             </div>
         </div>
 
+        <div class="message-container"></div>
+
     </div>
 
     <script>
+        /* MessageManager */
+        function defMessage(id, title, content, time){
+            var _obj = new Object(); 
+            _obj.id = id; 
+            _obj.title = title; 
+            _obj.content = content; 
+            $(".message-container").append("<div class='message-item' id='message-object-" + id + "'><div class='message-title'>" + title + "</div><div class='message-content'>" + content + "</div></div>");
+            _obj._jQuery = $("#message-object-" + id); 
+            if (!time) {
+                _obj.time = 3000; 
+            } else {
+                _obj.time = time; 
+            } 
+            _obj.removeself = function (){
+                _obj._jQuery.css({right: "-520px", opacity: "0"}); 
+                setTimeout(function (){
+                    _obj._jQuery.remove(); 
+                }, 1000);
+            }
+            setTimeout(function (){
+                _obj._jQuery.css({right: "0", opacity: "1"}); 
+                if (_obj.time > 0){
+                    setTimeout(function (){
+                        _obj.removeself(); 
+                    }, _obj.time);
+                }
+            }, 10);
+            return(_obj); 
+        }
+
+        defMessage(1, "1", "2");
         /* 列表套列表，在后面添加功能什么的时候会容易一些吧，就不用把那么多<p></p>改掉了 */
         var _items = {
             toolPanel: [
