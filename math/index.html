@@ -252,22 +252,12 @@
         }
 
         var selectedPanel = $("tabAbout");
-        /*
-        var toolPanel = document.createElement("div");
-        var filePanel = document.createElement("div");
-        var editPanel = document.createElement("div");
-        var varPanel = document.createElement("div");
-        var scriptPanel = document.createElement("div");
-        var aboutPanel = document.createElement("div");
-        */
         var items_dom = {};
         var panelList = [];
-        /* console.log(_items); */
         for (var key in _items) {
             items_dom[key] = document.getElementById(key);
             panelList.push(items_dom[key]);
             items_dom[key].innerHTML = _trans_button(_items[key]);
-            /* console.log(_items[key]); */
         };
         var contextPanel;
 
@@ -312,8 +302,15 @@
             }
         }
 
+
+        _bg_changed = []; 
         function itemClick(element) {
-            //点按后将对应的p-button的background-color切换为rgb(73, 142, 158)
+            /* 点按后将对应的p-button的background-color切换为rgb(73, 142, 158) */
+            for (var i=0; i < _bg_changed.length; i++) {
+                _bg_changed[i].style.backgroundColor = "rgb(73, 142, 158, 0)"; 
+            }
+            element.style.backgroundColor = "rgb(73, 142, 158)"; 
+            _bg_changed.push(element); 
         }
         var ani;
 

@@ -36,12 +36,44 @@ abstract class RealComputable {
                 else return Polynomial.Create(new Monomial(undefined, a, undefined), b);
             if (b instanceof Polynomial) {
                 const _b = _deepcopy(b); 
-                throw new Error("未定义的运算:add(" + a + "," + b + ")")
+                // throw new Error("未定义的运算:add(" + a + "," + b + ")")
                 for (var i1: number = 0; i1 < _b.length(); i1++) {
                     if (_b.monomials[i1].irrational.equals(a) && !_b.monomials[i1].hasUnkown) {
-                        // 未完成！
+                        _b.monomials[i1] = new Monomial(undefined, <Irrational>a.add(_b.monomials[i1].rational));
+                        return _b; 
                     }
                 }
+                _b.monomials[i1 + 1] = new Monomial(undefined, a, undefined);
+            }
+        }
+        if (a instanceof Unknown) {
+            // 跟上面差不多，找时间写
+        }
+        if (a instanceof Monomial) {
+            if (b instanceof Rational || b instanceof Irrational || b instanceof Unknown) {
+                // 交换律，a+b=b+a
+                return RealComputable.addReal(b, a); 
+            }
+            if (b instanceof Monomial) {
+                if ((a.hasIrrational && b.hasIrrational && a.irrational.equals(b.irrational)) || (!a.hasIrrational && !b.hasIrrational)) {
+                    if (a.hasUnkown && b.hasUnkown) {
+                        if (value_equal(a.unknowns, b.unknowns)) {
+                            return new Monomial(<Rational>RealComputable.addReal(a.rational, b.rational), a.irrational, a.unknowns)
+                        }
+                    } else {
+                        return new Monomial(<Rational>RealComputable.addReal(a.rational, b.rational), a.irrational, undefined)
+                    }
+                }
+                // 不知道有没有问题。。。
+                return Polynomial.Create(a, b); 
+            }
+            if (b instanceof Polynomial) {
+                return RealComputable.addReal(b, a); 
+            }
+        }
+        if (a instanceof Polynomial) {
+            if (b instanceof Rational || b instanceof Irrational || b instanceof Unknown) {
+                return RealComputable.addReal(b, a); 
             }
         }
         throw new Error("未定义的运算:add(" + a + "," + b + ")");
@@ -101,6 +133,30 @@ function toInt(o: number): number {
     var i = o.toString().indexOf('.');
     if (i >= 0) throw new Error("暂不支持非整数的指数");
     return o;
+}
+function value_equal(objectA: any, objectB: any){
+    try {
+        if (JSON.stringify(objectA) == JSON.stringify(objectB)) return true; 
+    } catch(err) {
+        if (objectA == objectB) return true; 
+    }
+    return false; 
+}
+function _python_in(object: any, list: any[]) {
+    // 一个Python的语句，我用惯了，在TS里实现一下
+    for (var index = 0; index < list.length; index++){
+        if (value_equal(object, list[index])) return true
+    }
+    return false; 
+}
+function intersection(listA: any[], listB: any[]) {
+    var _intersection = []; 
+    for (var index = 0; index < listA.length; index++) {
+        if (_python_in(listA[index], listB) && !_python_in(listA[index], _intersection)) {
+            _intersection.push(listA[index]);
+        }
+    }
+    return _intersection; 
 }
 class Rational extends RealComputable {
     public static readonly One: Rational = new Rational(1, 1, true);
@@ -192,7 +248,7 @@ class SquareRoot extends Irrational {
 }
 enum ConstType { Pi }
 class Monomial extends RealComputable {
-    public hasRational(): boolean { return Rational.One.equals(this.rational); }
+    public hasRational(): boolean { return !Rational.One.equals(this.rational); }
     public hasIrrational(): boolean { return this.irrational instanceof Irrational; }
     public hasUnkown(): boolean { return this.unknowns != undefined; }
     public readonly rational: Rational;
