@@ -1,0 +1,28 @@
+.message-container {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 500px;
+    padding: 10px;
+}
+
+.message-item {
+    background-color: #222222;
+    height: 70px;
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    right: -520px;
+    opacity: 0;
+    transition: all ease-in-out 0.5s; 
+}
+
+.message-title {
+    font-size: 20px;
+}
+
+.message-content {
+    color: #dddddd;
+}
