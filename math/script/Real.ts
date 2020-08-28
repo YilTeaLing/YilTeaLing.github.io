@@ -1,4 +1,8 @@
 const advisedMaxNumber: number = 1e10;
+function _deepcopy(object) {
+    // 有些肯定是复制不了的
+    return JSON.parse(JSON.stringify(object));
+}
 abstract class RealComputable {
     static addReal(a: RealComputable, b: RealComputable): Rational | Irrational | Unknown[] | Monomial | Polynomial {
         if (a instanceof Rational) {
@@ -9,14 +13,16 @@ abstract class RealComputable {
                 if (!b.hasIrrational && !b.hasUnkown) return a.add(b.rational);
                 else return Polynomial.Create(new Monomial(a, undefined, undefined), b);
             if (b instanceof Polynomial) {
-                for (var i1: number = 0; i1 < b.length(); i1++) {
-                    if (!b.monomials[i1].hasIrrational && !b.monomials[i1].hasUnkown) {
-                        b.monomials[i1] = new Monomial(<Rational>a.add(b.monomials[i1].rational));
-                        return b;
+                // 为了不要改动原来的b，我们要复制一个
+                const _b = _deepcopy(b); 
+                for (var i1: number = 0; i1 < _b.length(); i1++) {
+                    if (!_b.monomials[i1].hasIrrational && !_b.monomials[i1].hasUnkown) {
+                        _b.monomials[i1] = new Monomial(<Rational>a.add(_b.monomials[i1].rational));
+                        return _b;
                     }
                 }
-                b.monomials[i1 + 1] = new Monomial(a, undefined, undefined);
-                return b;
+                _b.monomials[i1 + 1] = new Monomial(a, undefined, undefined);
+                return _b;
             }
         }
         if (a instanceof Irrational) {
@@ -26,8 +32,17 @@ abstract class RealComputable {
                 else return Polynomial.Create(new Monomial(undefined, a, undefined), new Monomial(undefined, b, undefined));
             if (b instanceof Unknown) return Polynomial.Create(new Monomial(undefined, a, undefined), new Monomial(undefined, undefined, [b]));
             if (b instanceof Monomial)
-                if (a.equals(b.irrational)) return new Monomial(<Rational>b.rational.add(Rational.One), a, undefined);
+                if (a.equals(b.irrational) && !b.hasUnkown()/* 防止如 3*pi*sqrt(3) + 2*sqrt(3) */) return new Monomial(<Rational>b.rational.add(Rational.One), a, undefined);
                 else return Polynomial.Create(new Monomial(undefined, a, undefined), b);
+            if (b instanceof Polynomial) {
+                const _b = _deepcopy(b); 
+                throw new Error("未定义的运算:add(" + a + "," + b + ")")
+                for (var i1: number = 0; i1 < _b.length(); i1++) {
+                    if (_b.monomials[i1].irrational.equals(a) && !_b.monomials[i1].hasUnkown) {
+                        // 未完成！
+                    }
+                }
+            }
         }
         throw new Error("未定义的运算:add(" + a + "," + b + ")");
     }

@@ -20,6 +20,9 @@ function defMessage(title, content, time, bgcolor) {
     _obj.removeself = function () {
         _obj._jQuery.css({ right: "-520px", opacity: "0" });
         setTimeout(function () {
+            _obj._jQuery.css({ height: "0", padding: "0", marginBottom: "0" });
+        }, 500); 
+        setTimeout(function () {
             _obj._jQuery.remove();
         }, 1000);
     }
