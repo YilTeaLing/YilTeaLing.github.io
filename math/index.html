@@ -189,7 +189,7 @@
             overflow: hidden;
             right: -520px;
             opacity: 0;
-            transition: all ease-in-out 0.8s; 
+            transition: all ease-in-out 0.5s; 
         }
 
         .message-title {
@@ -242,13 +242,20 @@
 
     <script>
         /* MessageManager */
-        function defMessage(id, title, content, time){
+        var __objid = 0; 
+        function defMessage(/*id, */title, content, time, bgcolor){
             var _obj = new Object(); 
-            _obj.id = id; 
+            _obj.id = __objid;
+            __objid += 1;  
             _obj.title = title; 
             _obj.content = content; 
-            $(".message-container").append("<div class='message-item' id='message-object-" + id + "'><div class='message-title'>" + title + "</div><div class='message-content'>" + content + "</div></div>");
-            _obj._jQuery = $("#message-object-" + id); 
+            if (bgcolor){
+                _obj.bgcolor = bgcolor; 
+            } else {
+                _obj.bgcolor = "rgba(0,0,0,.8)"
+            }
+            $(".message-container").append("<div class='message-item' id='message-object-" + _obj.id + "' style='background-color:" + _obj.bgcolor + ";'><div class='message-title'>" + title + "</div><div class='message-content'>" + content + "</div></div>");
+            _obj._jQuery = $("#message-object-" + _obj.id); 
             if (!time) {
                 _obj.time = 3000; 
             } else {
@@ -271,7 +278,10 @@
             return(_obj); 
         }
 
-        /* 用法：defMessage(1, "1", "2"); */
+        BG_BLUE = "rgba(20, 70, 200, .8)";
+        BG_YELLOW = "rgba(207, 207, 76, 0.8)"; 
+        BG_RED = "rgba(200, 70, 70, .8);"; 
+
         /* 列表套列表，在后面添加功能什么的时候会容易一些吧，就不用把那么多<p></p>改掉了 */
         var _items = {
             toolPanel: [
