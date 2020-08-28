@@ -114,9 +114,6 @@
             left: 160px;
             z-index: 114514;
             text-align: center;
-            user-select: none;
-            -moz-user-select: none;
-            -webkit-user-select: none;
             line-height: 60px;
             border-top-right-radius: 10px;
             border-bottom-right-radius: 10px;
@@ -126,6 +123,15 @@
             font-family: Consolas;
             top: calc(50vh - 40px);
             transition: ease-in-out left 0.5s;
+        }
+
+        .hide-button,
+        #tabSelect td,
+        .p-button,
+        #copyrightClaim {
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
         }
 
         .hide-button:hover {
@@ -146,7 +152,7 @@
 
         body {
             overflow: hidden;
-            background: rgb(173, 234, 255); 
+            background: rgb(173, 234, 255);
         }
 
         #contextPanel div {
@@ -157,20 +163,20 @@
             /* border-top: solid 1px #fff; */
             /* border-bottom: solid 1px #fff; */
         }
-        
+
         #contextPanel div::-webkit-scrollbar {
             width: 5px;
             /* background-color: white; */
         }
 
         #contextPanel div::-webkit-scrollbar-thumb {
-            background-color: rgba(0,0,0,.2);
+            background-color: rgba(0, 0, 0, .2);
             width: 5px;
             border-radius: 2.5px;
         }
 
         #contextPanel div::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(0,0,0,.4);
+            background-color: rgba(0, 0, 0, .4);
         }
     </style>
     <link rel="stylesheet" href="./style/Message.css">
@@ -218,31 +224,31 @@
         var _items = {
             toolPanel: [
                 ["移动工具", "点工具", "线工具", "圆工具", "多边形工具", "自定义工具", "文本工具", "一元方程计算器", "多元方程计算器", "不等式计算器", "函数计算器", "化学计算器"]
-            ], 
+            ],
             filePanel: [
                 ["打开", "保存", "另存为", "上传至服务器", "从服务器打开", "打印", "导入为", "导出为", "关闭当前文档", "关闭所有文档"]
-            ], 
+            ],
             editPanel: [
                 ["撤销", "重做", "剪切", "复制", "粘贴", "删除", "全选", "反选", "选择父对象", "选择子对象", "属性", "参数"]
-            ], 
+            ],
             varPanel: [
                 ["新建变量", "删除变量", "变量控制台"]
-            ], 
+            ],
             scriptPanel: [
                 ["新建脚本", "打开脚本", "从外部导入脚本", "从服务器导入脚本", "导出脚本", "脚本控制台"]
-            ], 
+            ],
             aboutPanel: [
                 ["Github地址", "联系我们"]
             ]
-        }; 
+        };
 
-        function _trans_button(item){
-            var _name = item[0]; 
-            var _res = ""; 
-            for (var i=0;i<_name.length;i++){
+        function _trans_button(item) {
+            var _name = item[0];
+            var _res = "";
+            for (var i = 0; i < _name.length; i++) {
                 _res = _res + "<p class='p-button' onclick='itemClick(this)'>" + _name[i] + "</p>";
             }
-            return(_res);
+            return (_res);
         }
 
         var selectedPanel = $("tabAbout");
@@ -254,11 +260,11 @@
         var scriptPanel = document.createElement("div");
         var aboutPanel = document.createElement("div");
         */
-        var items_dom = {}; 
-        var panelList = []; 
+        var items_dom = {};
+        var panelList = [];
         /* console.log(_items); */
         for (var key in _items) {
-            items_dom[key] = document.getElementById(key); 
+            items_dom[key] = document.getElementById(key);
             panelList.push(items_dom[key]);
             items_dom[key].innerHTML = _trans_button(_items[key]);
             /* console.log(_items[key]); */
@@ -301,7 +307,7 @@
                 n.css("opacity", 0);
                 ani = n;
                 n.css("left", 160)
-                n.animate({ left: 0 }, { duration: 300, queue: false,easing:"easeOutCirc"});
+                n.animate({ left: 0 }, { duration: 300, queue: false, easing: "easeOutCirc" });
                 n.animate({ opacity: 1 }, { duration: 600, queue: false });
             }
         }
@@ -311,21 +317,21 @@
         }
         var ani;
 
-        $(document).ready(function (){
-            var _sidebar_toggle = true; 
-            var sidebar = $("#sidebar"); 
-            var hide_button = $(".hide-button"); 
-            var pad = $("#pad"); 
-            hide_button.click(function (){
-                if (_sidebar_toggle){
-                    sidebar.css({left: "-160px"}); 
-                    pad.css({left: "0"}); 
-                    hide_button.css({left: "0"}); 
+        $(document).ready(function () {
+            var _sidebar_toggle = true;
+            var sidebar = $("#sidebar");
+            var hide_button = $(".hide-button");
+            var pad = $("#pad");
+            hide_button.click(function () {
+                if (_sidebar_toggle) {
+                    sidebar.css({ left: "-160px" });
+                    pad.css({ left: "0" });
+                    hide_button.css({ left: "0" });
                     hide_button.text(">");
                 } else {
-                    sidebar.css({left: "0"}); 
-                    pad.css({left: "160px"}); 
-                    hide_button.css({left: "160px"}); 
+                    sidebar.css({ left: "0" });
+                    pad.css({ left: "160px" });
+                    hide_button.css({ left: "160px" });
                     hide_button.text("<");
                 }
                 _sidebar_toggle = !_sidebar_toggle
