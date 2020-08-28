@@ -1,3 +1,9 @@
+/*
+Copyright © 2020 ll rights reserved.
+Author: LonelyDagger, Passthem, Tealing
+Released on teable.top/math
+DONOT DISTRIBUTE! VIOLATORS WILL BE DEALT WITH ACCORDING TO LAW.
+ */
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -12,52 +18,145 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 var advisedMaxNumber = 1e10;
+//弃用此方法，绝大部分本页定义类的实例的属性均为只读，不会改变
+//多项式Polynomial除外，它只托管一个Monomial数组，因此输入计算的Polynomial对象的值可能会改变
+/*function _deepcopy(object) {
+    // 有些肯定是复制不了的
+    return JSON.parse(JSON.stringify(object));
+}*/
 var RealComputable = /** @class */ (function () {
     function RealComputable() {
     }
+    //进度: 已完成addReal(a,b)。
     RealComputable.addReal = function (a, b) {
         if (a instanceof Rational) {
+            //a，b均为有理数，分数通分加减法(Rational构造函数负责化简)
             if (b instanceof Rational)
                 return new Rational(a.self * b.divisor + b.self * a.divisor, a.divisor * b.divisor);
+            //a有理数，b无理数，创建多项式
             if (b instanceof Irrational)
                 return Polynomial.Create(new Monomial(a, undefined, undefined), new Monomial(undefined, b, undefined));
+            //a有理数，b未知数，创建多项式
             if (b instanceof Unknown)
                 return Polynomial.Create(new Monomial(a, undefined, undefined), new Monomial(undefined, undefined, [b]));
+            //a有理数，b单项式
             if (b instanceof Monomial)
-                if (!b.hasIrrational && !b.hasUnkown)
+                //若b不含无理数和未知数，将有理数部分相加
+                if (!b.hasIrrational() && !b.hasUnkown())
                     return a.add(b.rational);
+                //否则创建多项式
                 else
                     return Polynomial.Create(new Monomial(a, undefined, undefined), b);
+            //a有理数，b多项式
             if (b instanceof Polynomial) {
-                for (var i1 = 0; i1 < b.length(); i1++) {
-                    if (!b.monomials[i1].hasIrrational && !b.monomials[i1].hasUnkown) {
-                        b.monomials[i1] = new Monomial(a.add(b.monomials[i1].rational));
+                //遍历b中每一项
+                for (var i = 0; i < b.length(); i++)
+                    //若b中某一项不含无理数和未知数，将有理数部分相加
+                    if (!b.monomials[i].hasIrrational() && !b.monomials[i].hasUnkown()) {
+                        b.monomials[i] = new Monomial(a.add(b.monomials[i].rational));
                         return b;
                     }
-                }
-                b.monomials[i1 + 1] = new Monomial(a, undefined, undefined);
+                //否则在多项式中添加一项
+                b.monomials[i + 1] = new Monomial(a, undefined, undefined);
                 return b;
             }
         }
         if (a instanceof Irrational) {
+            //a无理数，b有理数，复用方法
             if (b instanceof Rational)
                 return b.add(a);
+            //a，b均为无理数，判断无理数是否相等，相等返回2a，否则创建多项式
             if (b instanceof Irrational)
                 if (a.equals(b))
                     return new Monomial(new Rational(2, 1, true), a, undefined);
                 else
                     return Polynomial.Create(new Monomial(undefined, a, undefined), new Monomial(undefined, b, undefined));
+            //a无理数，b未知数，创建多项式
             if (b instanceof Unknown)
                 return Polynomial.Create(new Monomial(undefined, a, undefined), new Monomial(undefined, undefined, [b]));
+            //a无理数，b单项式
             if (b instanceof Monomial)
-                if (a.equals(b.irrational))
+                //若b中无理数等于a且不含未知数，将有理数部分+1
+                if (a && a.equals(b.irrational) && !b.hasUnkown())
                     return new Monomial(b.rational.add(Rational.One), a, undefined);
+                //否则创建多项式
                 else
                     return Polynomial.Create(new Monomial(undefined, a, undefined), b);
+            //a无理数，b多项式
+            if (b instanceof Polynomial) {
+                for (var i = 0; i < b.length(); i++)
+                    //若b中某一项无理数等于a且不含未知数，将有理数部分+1
+                    if (b.monomials[i].irrational.equals(a) && !b.monomials[i].hasUnkown()) {
+                        b.monomials[i] = new Monomial(Rational.One.add(b.monomials[i].rational), a);
+                        return b;
+                    }
+                //否则在多项式中添加一项
+                b.monomials[i + 1] = new Monomial(undefined, a, undefined);
+                return b;
+            }
         }
+        if (a instanceof Unknown) {
+            //a未知数，b为有理数或无理数，复用方法
+            if (b instanceof Rational || b instanceof Irrational)
+                return RealComputable.addReal(b, a);
+            //a，b均为未知数，如果符号和指数相同，返回2a，否则创建多项式
+            if (b instanceof Unknown)
+                if (a.symbol == b.symbol && a.exponent == b.exponent)
+                    return new Monomial(new Rational(2, 1), undefined, [a]);
+                else
+                    return Polynomial.Create(new Monomial(undefined, undefined, [a]), new Monomial(undefined, undefined, [b]));
+            //a未知数，b单项式，若b不含无理数且未知数符号和指数等于a，将有理数部分+1，否则创建多项式
+            if (b instanceof Monomial)
+                if (!b.hasIrrational && b.hasUnkown() && b.unknowns.length == 1 && b.unknowns[0].equals(a))
+                    return new Monomial(Rational.One.add(b.rational), undefined, [a]);
+                else
+                    return Polynomial.Create(new Monomial(undefined, undefined, [a]), b);
+            //a未知数，b多项式
+            if (b instanceof Polynomial) {
+                for (var i = 0; i < b.length(); i++)
+                    //若b中某一项不含无理数且未知数符号和指数等于a，将有理数部分+1
+                    if (!b.monomials[i].hasIrrational() && b.monomials[i].hasUnkown() && b.monomials[i].unknowns.length == 1 && b.monomials[i].equals(a)) {
+                        b.monomials[i] = new Monomial(Rational.One.add(b.monomials[i].rational), undefined, [a]);
+                        return b;
+                    }
+                //否则在多项式中添加一项
+                b.monomials[i + 1] = new Monomial(undefined, undefined, [a]);
+                return b;
+            }
+        }
+        if (a instanceof Monomial) {
+            //a单项式，b为有理数或无理数或未知数，复用方法
+            if (b instanceof Rational || b instanceof Irrational || b instanceof Unknown)
+                return RealComputable.addReal(b, a);
+            //a，b均为单项式
+            if (b instanceof Monomial) {
+                //a，b无理数部分相同或不含无理数
+                if ((a.hasIrrational() && b.hasIrrational() && a.irrational.equals(b.irrational)) || (!a.hasIrrational() && !b.hasIrrational()))
+                    //若a，b均含未知数且完全相同，或a，b均不含未知数，则将有理数部分相加
+                    if (unknownEquals(a.unknowns, b.unknowns))
+                        return new Monomial(RealComputable.addReal(a.rational, b.rational), a.irrational, a.unknowns);
+                //否则连接a，b创建多项式
+                return Polynomial.Create(a, b);
+            }
+            if (b instanceof Polynomial) {
+                for (var i = 0; i < b.length(); i++)
+                    //若b中某一项与a无理数部分相同或不含无理数，将有理数部分相加
+                    if (((a.hasIrrational() && b.monomials[i].hasIrrational() && a.irrational.equals(b.monomials[i].irrational)) || (!a.hasIrrational() && !b.monomials[i].hasIrrational())) && (unknownEquals(a.unknowns, b.monomials[i].unknowns))) {
+                        b.monomials[i] = new Monomial(a.rational.add(b.monomials[i].rational), a.irrational, a.unknowns);
+                    }
+                //否则在多项式中添加一项
+                b.monomials[i + 1] = a;
+                return b;
+            }
+        }
+        //a为多项式，全部复用方法
+        if (a instanceof Polynomial)
+            return b.add(a);
         throw new Error("未定义的运算:add(" + a + "," + b + ")");
     };
+    //进度: 未开始实现mulReal(a,b)。
     RealComputable.mulReal = function (a, b) { return; };
+    //进度: 已完成equals(a,b)。
     RealComputable.equals = function (a, b) {
         if (a instanceof Rational)
             if (b instanceof Rational)
@@ -97,18 +196,30 @@ var RealComputable = /** @class */ (function () {
     RealComputable.prototype.equals = function (n) { return RealComputable.equals(this, n); };
     return RealComputable;
 }());
+function unknownEquals(a, b) {
+    if (a != undefined && a.length > 0) {
+        if (b && a.length == b.length) {
+            for (var i = 0; i < a.length; i++)
+                if (!a[i].equals(b[i]))
+                    return false;
+            return true;
+        }
+        return false;
+    }
+    return b == undefined || b.length <= 0;
+}
 var Unknown = /** @class */ (function (_super) {
     __extends(Unknown, _super);
     function Unknown(s, e, v) {
         if (v === void 0) { v = false; }
         var _this = _super.call(this) || this;
         CheckNumber(e);
-        if (s.length != 1)
-            throw new Error("未知数的命名无效");
         _this.symbol = s;
         if (v)
             _this.exponent = t;
         else {
+            if (!s || s.length != 1)
+                throw new Error("未知数的命名无效");
             var t = toInt(e);
             if (t == 0)
                 throw new Error("将不会对未知数进行零次幂运算。请尝试改用\"1\"");
@@ -126,6 +237,31 @@ function toInt(o) {
         throw new Error("暂不支持非整数的指数");
     return o;
 }
+//弃用以下方法以提升性能。不推荐使用JSON处理
+/*function value_equal(objectA: any, objectB: any) {
+    try {
+        if (JSON.stringify(objectA) == JSON.stringify(objectB)) return true;
+    } catch (err) {
+        if (objectA == objectB) return true;
+    }
+    return false;
+}
+function _python_in(object: any, list: any[]) {
+    // 一个Python的语句，我用惯了，在TS里实现一下
+    for (var index = 0; index < list.length; index++) {
+        if (value_equal(object, list[index])) return true
+    }
+    return false;
+}
+function intersection(listA: any[], listB: any[]) {
+    var _intersection = [];
+    for (var index = 0; index < listA.length; index++) {
+        if (_python_in(listA[index], listB) && !_python_in(listA[index], _intersection)) {
+            _intersection.push(listA[index]);
+        }
+    }
+    return _intersection;
+}*/
 var Rational = /** @class */ (function (_super) {
     __extends(Rational, _super);
     function Rational(s, d, v) {
@@ -248,21 +384,9 @@ var Monomial = /** @class */ (function (_super) {
             _this.unknowns = u;
         return _this;
     }
-    Monomial.prototype.hasRational = function () { return Rational.One.equals(this.rational); };
+    Monomial.prototype.hasRational = function () { return !Rational.One.equals(this.rational); };
     Monomial.prototype.hasIrrational = function () { return this.irrational instanceof Irrational; };
     Monomial.prototype.hasUnkown = function () { return this.unknowns != undefined; };
-    //static Create(r: Rational = Rational.One, i?: Irrational, ...u: Unknown[]): Rational | Irrational | Unknown[] | Monomial {
-    //if (r.equals(Rational.Zero)) return r;
-    //if (!r.equals(Rational.One)) {
-    //    if (i instanceof Irrational || (u != undefined && u.length > 0)) return new Monomial(r, i, u);
-    //     return r;
-    // }
-    //if (i instanceof Irrational)
-    //     if ((u != undefined && u.length > 0))
-    //         return new Monomial(r, i, u); else return i;
-    //  if ((u != undefined && u.length > 0)) return u;
-    //  throw new Error("无法构造无内容的单项式");
-    // }
     Monomial.prototype.Opp = function () { return new Monomial(this.rational.Opp(), this.irrational, this.unknowns); };
     Monomial.prototype.Rec = function () {
         var nu = this.unknowns;
