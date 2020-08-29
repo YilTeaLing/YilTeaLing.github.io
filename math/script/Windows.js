@@ -1,8 +1,9 @@
-$(document).ready(function () {
+function _window_listener(id) {
+    $(`#window-item-${id}`).css("z-index", "1000000");
     // 以后在添加覆盖全屏（或一部分pad）的元素时
     // 一定要在CSS里加上pointer-events: none;
     // （除非该元素需要监听点击事件）
-    $(".window-head").dblclick(function () {
+    $(`#window-head-${id}`).dblclick(function () {
         $(this).parent().css("left", "0");
         $(this).parent().css("top", "0");
         $(this).parent().removeClass("window-stick-left");
@@ -11,24 +12,33 @@ $(document).ready(function () {
         $(this).parent().removeClass("window-stick-right");
         $(this).parent().toggleClass("window-stick-fullscreen");
     });
-    $(".window-head").mousedown(function (event) {
-        // 仍然存在一些问题
-        $(".window-item").css("z-index", "10000");
-        $(this).parent().css("z-index", "10001");
+    $(`#window-head-${id}`).mousedown(function (event) {
+        // 不会真有人闲得点窗口标题1000000下吧，不会吧不会吧不会吧
+        $(".window-item").each(function (index, element) {
+            $(element).css("z-index", Number($(element).css("z-index")) - 1);
+        });
+        $(this).parent().css("z-index", "1000000");
         if (!$(this).parent().hasClass("window-stick-fullscreen")) {
             var reachL = false;
             var reachR = false;
-            var reachT = false; 
-            var reachB = false; 
+            var reachT = false;
+            var reachB = false;
             _box = $(this).parent();
+            var _pad = document.getElementById("pad");
             _box.css({
-                top: _box.position().top, 
-                left: _box.position().left, 
+                top: _box.position().top,
+                left: _box.position().left,
             });
+            if ($(this).parent().hasClass("window-stick-top") || $(this).parent().hasClass("window-stick-bottom")) {
+                _box.css({
+                    top: (event.clientY - _pad.offsetTop - 10) + "px",
+                    left: (event.clientX - _pad.offsetLeft - 10) + "px",
+                });
+                // console.log(_pad.offsetLeft); 
+            }
             // 窗口
             var old_position_left = _box.position().left;
             var old_position_top = _box.position().top;
-            var _pad = document.getElementById("pad");
             // 鼠标
             var _begin_x = event.clientX - _pad.clientLeft;
             var _begin_y = event.clientY - _pad.clientTop;
@@ -90,28 +100,47 @@ $(document).ready(function () {
                 if ((reachR && reachT) || (reachL && reachT) || (reachB && reachL) || (reachB && reachR)) {
                     _box.css("left", "");
                     _box.css("top", "");
-                    _box.addClass("window-stick-fullscreen"); 
+                    _box.addClass("window-stick-fullscreen");
                 } else if (reachR) {
                     _box.css("left", "");
                     _box.css("top", "");
-                    _box.addClass("window-stick-right"); 
+                    _box.addClass("window-stick-right");
                 } else if (reachL) {
                     _box.css("left", "");
                     _box.css("top", "");
-                    _box.addClass("window-stick-left"); 
+                    _box.addClass("window-stick-left");
                 } else if (reachT) {
                     _box.css("left", "");
                     _box.css("top", "");
-                    _box.addClass("window-stick-top"); 
+                    _box.addClass("window-stick-top");
                 } else if (reachB) {
                     _box.css("left", "");
                     _box.css("top", "");
-                    _box.addClass("window-stick-bottom"); 
+                    _box.addClass("window-stick-bottom");
                 }
             });
         }
     });
-    $(".window-close-btn").click(function (){
+    $(`#window-cbtn-${id}`).click(function () {
         $(this).parent().parent().remove();
     });
+}
+
+// 从1开始
+var _window_id = 1;
+
+$(document).ready(function () {
+    $(".window-item").each(function (index, element) {
+        _window_listener(_window_id);
+        // console.log(_window_id); 
+        _window_id++;
+    });
 });
+
+function addWindow(title, content) {
+    // 我的麻耶，这么长的字符串怎么维护啊。。。
+    _outstr = `<div class="window-item" id="window-item-${_window_id}"><div class="window-head" id="window-head-${_window_id}"><div class="window-title">${title}</div><div class="window-close-btn" id="window-cbtn-${_window_id}">x</div></div><div class="window-body">${content}</div></div>`;
+    $("#pad").append(_outstr);
+    _window_listener(_window_id); 
+    _window_id ++; 
+}
