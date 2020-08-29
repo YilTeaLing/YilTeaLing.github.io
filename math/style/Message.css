@@ -4,6 +4,7 @@
     top: 0;
     width: 500px;
     padding: 10px;
+    pointer-events: none;
 }
 
 .message-item {

@@ -7,6 +7,7 @@
     <script src="./script/Real.js"></script>
     <script src="../jquery.easing.1.3.js"></script>
     <script src="./script/Message.js"></script>
+    <script src="./script/Windows.js"></script>
     <!--<script src="../jquery.easing.compatibility.js"></script>-->
     <script src="control/calculator.js"></script>
     <meta name="viewport"
@@ -194,6 +195,7 @@
         }
     </style>
     <link rel="stylesheet" href="./style/Message.css">
+    <link rel="stylesheet" href="./style/Windows.css">
 </head>
 
 <body>
@@ -225,8 +227,28 @@
         <div class="hide-button" id="hide-button">&lt;</div>
 
         <div id="pad">
+            <!--
             <div style="width: 150px;" onmousedown="controlMouseDown(event, this)" onmousemove="controlMouseMove(event, this)" onmouseup="controlMouseUp()">
                 <div class="controlBar"><a class="exitBtn">×</a></div>
+            </div>
+            -->
+            <div class="window-item" id="window-item-1">
+                <div class="window-head">
+                    <div class="window-title">窗口</div>
+                    <div class="window-close-btn">x</div>
+                </div>
+                <div class="window-body">
+                    <!--<div class="something">Hello world! </div>-->
+                </div>
+            </div>
+            <div class="window-item" id="window-item-2">
+                <div class="window-head">
+                    <div class="window-title">窗口</div>
+                    <div class="window-close-btn">x</div>
+                </div>
+                <div class="window-body">
+                    <!--<div class="something">Hello world! </div>-->
+                </div>
             </div>
             <div id="copyrightClaim">
                 <p>CopyRight © 2020 teable.top All Rights Reserved.</p>

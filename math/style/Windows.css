@@ -1,0 +1,73 @@
+.window-item {
+    position: absolute;
+    background-color: white;
+    border: solid 1px #ccc;
+    border-radius: 3px;
+    min-width: 200px;
+    min-height: 200px;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+.window-head {
+    background-color: #0099bc;
+    color: white;
+    border-radius: 3px;
+    position: relative;
+    height: 21.9px;
+    width: calc(100% + 0.5px);
+    border: solid 1px #ccc;
+    left: -1px;
+    top: -1px;
+}
+
+.window-title {
+    padding: 4px;
+    font-size: small;
+}
+
+.window-close-btn {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    width: 17.9px;
+    height: 17.9px;
+    padding: 2px;
+    border-radius: 3px;
+    background-color: tomato;
+    text-align: center;
+    font-size: small;
+    font-family: consolas;
+}
+
+.window-item.window-stick-left {
+    height: calc(100% - 2px);
+    left: 0;
+    top: 0;
+}
+
+.window-item.window-stick-top {
+    width: calc(100% - 2px);
+    left: 0;
+    top: 0;
+}
+
+.window-item.window-stick-right {
+    height: calc(100% - 2px);
+    right: 0;
+    top: 0;
+}
+
+.window-item.window-stick-bottom {
+    width: calc(100% - 2px);
+    left: 0;
+    bottom: 0;
+}
+
+.window-item.window-stick-fullscreen {
+    width: calc(100% - 2px);
+    height: calc(100% - 2px);
+    left: 0;
+    bottom: 0;
+}
