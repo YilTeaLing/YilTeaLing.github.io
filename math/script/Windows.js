@@ -85,6 +85,23 @@ function _window_listener(id) {
                     left: new_position_left,
                     top: new_position_top,
                 });
+                // 贴边标识
+                $(".edge-item-bottom").css("opacity", "0");
+                $(".edge-item-top").css("opacity", "0");
+                $(".edge-item-left").css("opacity", "0");
+                $(".edge-item-right").css("opacity", "0");
+                $(".edge-item-fullscreen").css("opacity", "0");
+                if ((reachR && reachT) || (reachL && reachT) || (reachB && reachL) || (reachB && reachR)) {
+                    $(".edge-item-fullscreen").css("opacity", "1");
+                } else if (reachR) {
+                    $(".edge-item-right").css("opacity", "1");
+                } else if (reachL) {
+                    $(".edge-item-left").css("opacity", "1");
+                } else if (reachT) {
+                    $(".edge-item-top").css("opacity", "1");
+                } else if (reachB) {
+                    $(".edge-item-bottom").css("opacity", "1");
+                }
             });
             $(document).mouseup(_fup = function (event) {
                 $(document).unbind("mousemove", _fmove);
@@ -141,6 +158,13 @@ function addWindow(title, content) {
     // 我的麻耶，这么长的字符串怎么维护啊。。。
     _outstr = `<div class="window-item" id="window-item-${_window_id}"><div class="window-head" id="window-head-${_window_id}"><div class="window-title">${title}</div><div class="window-close-btn" id="window-cbtn-${_window_id}">x</div></div><div class="window-body">${content}</div></div>`;
     $("#pad").append(_outstr);
-    _window_listener(_window_id); 
-    _window_id ++; 
+    _window_listener(_window_id);
+    _window_id++;
+    return (_window_id - 1);
+}
+
+function destroyWindow(windowid) {
+    _winobj = $("#window-item-" + windowid);
+    _winobj.remove();
+    return (true);
 }
