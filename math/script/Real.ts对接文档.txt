@@ -1,0 +1,39 @@
+Real.ts(TypeScript)对接文档
+最后修改于 2020.9.4 23时 By LonelyDagger
+
+一 前言
+<节释义 本节介绍Real.ts的基本目标和基础工作。>
+1.Real意为实数。Real.ts实现实数范围内的一些中低阶运算(包括四则(适用于所有实数)、二次方根(适用于整数)、多次幂(适用于所有实数)等)。
+2.js基本库无法准确保存并运算分数、无理数和未知数，因此Real.ts通过TypeScript定义了多种类，以保存这些数据。
+3.TypeScript无法被客户端原生支持。在完成对Real.ts的修改后，须通过TypeScript编译器将其编译为JavaScript代码。
+4.TypeScript编译器可通过npm下载。npm随同Node.js安装。下载npm后可通过:
+npm install -g cnpm --registry=https://registry.npm.taobao.org
+命令安装cnpm(淘宝非营利性团队提供的npm国内镜像)，便于后续快速下载TypeScript:
+cnpm install -g typescript
+注意提及的所有命令都不能随便修改大小写。如需使用npm安装TypeScript，则须将cnpm命令换为npm命令:
+npm install -g typescript
+完成TypeScript安装后便可使用tsc命令编译ts文件。假设当前目录为整个储存库的顶级目录，则可使用:
+tsc .\math\script\Real.ts
+命令来编译Real.ts。若编译成功则不会显示信息，并会在ts文件同级目录下生成同名的js文件。
+5.由于JavaScript并不原生支持TypeScript较多特性(如类型注释)，编译生成的js文件和原ts文件逻辑结构相差可能较大，并且在F12开发人员工具的控制台调试中可能取得意外的效果。
+6.在2020.8.29，Real.ts进行第一次整体重构。重构提升了库的可拓展性，增加了irrationalItem、constItem、uncertainItem等类以符合高级需求。
+7.重构前已保留一份旧版本的副本，命名为Real.old.ts。此副本可在重构后版本取得较大进展后删除。
+
+二 编程规范
+<节释义 本节介绍Real.ts中的编程规范。充分理解它们将有助于对接工作，而对Real.ts的一切修改也须遵循这些规范。>
+1.布尔返回值方法使用肯定语态而非否定。例:使用hasRational()而非hasnotRational()。
+2.方法命名使用动(宾)而非(主)谓。
+3.所有命名使用小驼峰。例:使用constItem而非ConstItem。
+4.在进行连续判断时，尤其是类型判断时，不推荐使用switch。
+5.直接return表达式结果，而非if(表达式)return true。并且不推荐使用else if。
+6.判断时将无法处理的分支一直留至方法底部并在底部统一返回特定的无效值，而非在发现无效时立即返回无效值。尽管这么做会降低性能，但有利于维护。
+7.推荐使用let，但注意部分变量可能需要跨区域访问。
+8.不推荐使用foreach。
+9.声明任何变量或属性后都需要添加类型注释。即使是any也须添加。
+10.在判断类型和联合类型声明中保持简略。如果classAA是classA的继承类，则应使用<classA|classB>而非<classA|classAA|classB>。
+11.在较大的方法中须撰写注释。注释无须严谨的格式，易懂即可。
+12.暂不创建自定义异常类，抛出异常统一使用throw new Error("{错误信息}")。
+13.当判断变量非空时只要语法允许，就不添加!=undefined。
+14.优先使用联合类型而非共同基类。
+15.没有必要的大括号应删除。
+16.为了保证逻辑严密，须保留长判断表达式中用于分组的小括号。
