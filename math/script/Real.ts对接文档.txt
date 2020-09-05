@@ -23,7 +23,7 @@ tsc .\math\script\Real.ts
 <节释义 本节介绍Real.ts中的编程规范。充分理解它们将有助于对接工作，而对Real.ts的一切修改也须遵循这些规范。>
 1.布尔返回值方法使用肯定语态而非否定。例:使用hasRational()而非hasnotRational()。
 2.方法命名使用动(宾)而非(主)谓。
-3.所有命名使用小驼峰。例:使用constItem而非ConstItem。
+3.方法、属性命名使用小驼峰命名法，类、接口命名使用大驼峰命名法。
 4.在进行连续判断时，尤其是类型判断时，不推荐使用switch。
 5.直接return表达式结果，而非if(表达式)return true。并且不推荐使用else if。
 6.判断时将无法处理的分支一直留至方法底部并在底部统一返回特定的无效值，而非在发现无效时立即返回无效值。尽管这么做会降低性能，但有利于维护。
@@ -37,3 +37,118 @@ tsc .\math\script\Real.ts
 14.优先使用联合类型而非共同基类。
 15.没有必要的大括号应删除。
 16.为了保证逻辑严密，须保留长判断表达式中用于分组的小括号。
+17.优先使用静态方法而非实例方法。例:优先使用RealComputable.addReal(a,b)而非a.add(b)。
+
+三 结构释义
+<节释义 本节介绍Real.ts中的所有类，包括其有效方法、属性和用法。所有类的属性不应在创建后被修改，因此须在合理的时机深表克隆对象。所有属性若未说明可为undefined，则始终不为undefined。>
+1.abstract class RealComputable
+    所有实数的基类，并实现实数计算的静态方法。定义抽象方法用于省去减法(等效于加上相反数)和除法(等效于乘以倒数)的实现。
+    已知的实数继承类:Uncertain,Rational,Irrational,SpecialConst,SquareRoot,ConstItem,SpecialConstItem,IrrationalItem,UncertainItem,Monomial,Polynomial
+    (1)static addReal(a: RealComputable, b: RealComputable): RealComputable
+        实现实数加法。
+    (2)static mulReal(a: RealComputable, b: RealComputable): RealComputable
+        实现实数乘法。
+    (3)static equals(a: RealComputable, b: RealComputable): boolean
+        实现实数的值比较方法，可跨类型比较，但不能比较非实数。两个参数均为undefined始终返回true，有且只有一个参数为undefined始终返回false。
+    (4)abstract opp(): RealComputable
+        要求继承类实现的取相反数方法。
+    (5)abstract rec(): RealComputable
+        要求继承类实现的取倒数方法。
+    (6)add(n: RealComputable): RealComputable
+        实例方法，调用静态实数加法。
+    (7)min(n: RealComputable): RealComputable
+        实例方法，调用静态实数加法与取相反数方法。
+    (8)mul(n: RealComputable): RealComputable
+        实例方法，调用静态实数乘法。
+    (9)div(n: RealComputable): RealComputable
+        实例方法，调用静态实数乘法与取倒数方法。
+    (10)equals(n: RealComputable): boolean
+        实例方法，调用静态值比较方法。
+2.class Uncertain extends RealComputable
+    表示单个未知数，并保存其指数。
+    (1)public readonly symbol: string
+        只读属性，表示未知数符号。只能使用单个a~z的字符。
+    (2)public readonly exponent: number
+        只读属性，表示未知数指数。必须为非零整数。
+    (3)constructor(s: string, e: number = 1, v: boolean = false)
+        构造函数，创建单个未知数，将检查参数s和e。若v为true则跳过检查。
+    (4)opp(): Monomial
+        实现抽象方法获取相反数。返回带有常数-1和自身作为未知数项的单项式。
+    (5)rec(): Uncertain
+        实现抽象方法获取倒数。返回自身的深表复制，指数互为相反数。
+3.class Rational extends RealComputable
+    表示有理数。
+    (1)public static readonly One: Rational
+        只读静态成员，表示整数1。
+    (2)public static readonly Zero: Rational
+        只读静态成员，表示整数0。
+    (3)public static readonly MinusOne: Rational
+        只读静态成员，表示整数-1。
+    (4)public readonly self: number
+        只读属性，表示实例的分子。实例的正负性体现在分子上。
+    (5)public readonly divisor: number
+        只读属性，表示实例的分母。
+    (6)constructor(s: number, d: number, v?: boolean)
+        构造函数，创建有理数，将检查参数s和d并化简。若v为true则跳过检查。
+    (7)opp(): Rational
+        实现抽象方法获取相反数。返回自身的深表复制，分子互为相反数。
+    (8)rec(): Rational
+        实现抽象方法获取倒数。
+4.abstract class Irrational extends RealComputable
+    所有无理数的基类。
+    (1)public static irrationalEquals(a: Irrational, b: Irrational): boolean
+        静态无理数值比较方法，可跨类型比较，但不能比较非无理数。两个参数均为undefined始终返回true，有且只有一个参数为undefined始终返回false。
+    (2)opp(): ConstItem
+        实现抽象方法获取相反数。返回返回带有有理数-1和自身作为无理数项的常数项。
+    (3)abstract rec(): Rational | Irrational | ConstItem
+        限定继承类实现获取倒数抽象方法时返回值的类型。
+5.class SpecialConst extends Irrational
+    表示特殊无理数常量，并保存其指数。
+    (1)public readonly type: ConstType
+        只读属性，表示常量类型。值应为ConstType枚举的子项之一。
+    (2)public readonly exponent: number
+        只读属性，表示常量指数。必须为非零整数。
+    (3)constructor(t: ConstType, e: number = 1, v: boolean = false)
+        构造函数，创建特殊无理数常量，将检查参数e。若v为true则跳过检查。
+    (4)rec(): SpecialConst
+        实现抽象方法获取倒数。返回自身的深表复制，指数互为相反数。
+6.class SquareRoot extends Irrational
+    表示平方根，或称数学上的算术平方根(即不带正负号)。由于通过整数创建平方根可化简，此类的构造函数为私有。
+    (1)public readonly self: number
+        只读属性，表示根底数。
+    (2)public static unsafeCreate(s: number): SquareRoot
+        静态方法，非安全构造平方根。将直接调用构造函数，不会检查参数s，也不对其化简。
+    (3)public static create(s: number): SquareRoot | Rational | ConstItem
+        静态方法，构造平方根，将检查参数s并化简。
+        化简过程:
+        定义整数r表示将创建的有理数部分。
+        检查s能否被平方数(保存在SquareNumber数组中，已预存2~50的平方值)整除，若能则将s除以该平方数，然后将r乘以该平方数的算术平方根。
+        当s小于下一个平方数或已超出平方数最大值时，通过s和r创建有理数、无理数或常数项。
+    (4)rec(): ConstItem
+        实现抽象方法获取倒数。将此平方根有理化。
+7.class ConstItem extends RealComputable
+    表示常数项，包括有理数和无理数项。
+    (1)public hasRational(): boolean
+        实例方法，检查此常数项的有理数部分是否不等于1。
+    (2)public hasIrrational(): boolean
+        实例方法，检查此常数项是否有无理数项。
+    (3)opp(): ConstItem
+        实现抽象方法获取相反数。返回自身的深表复制，有理数部分互为相反数。
+    (4)rec(): Rational | Irrational | ConstItem
+        实现抽象方法获取倒数。将有理数部分的倒数和无理数项的倒数(若有无理数项)相乘。
+    (5)public readonly rational: Rational
+        只读属性，表示有理数部分。
+    (6)public readonly irrational: IrrationalItem
+        只读属性，表示无理数项。可能为undefined。
+    (7)constructor(r: Rational = Rational.One, i?: IrrationalItem)
+        构造函数，创建常数项。
+8.class SpecialConstItem extends Irrational
+    表示特殊无理数常量项。通过数组来储存特殊无理数常量。
+9.class IrrationalItem extends Irrational
+    表示无理数项，包括特殊无理数常量项和平方根。
+10.class UncertainItem extends RealComputable
+    表示未知数项，通过数组来储存未知数。
+11.class Monomial extends RealComputable
+    表示单项式，包括常数项和未知数项。
+12.class Polynomial extends RealComputable
+    表示多项式，通过数组来储存单项式。暂不支持对多项式取倒数。
