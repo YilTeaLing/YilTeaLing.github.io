@@ -4,6 +4,18 @@ Author: LonelyDagger, Passthem, Tealing
 DONOT DISTRIBUTE! VIOLATORS WILL BE DEALT WITH ACCORDING TO LAW.
  */
 function copyObject<T extends object>(origin: T): T { return Object.create(origin).__proto__; }
+//实现实数范围内的跨类型计算。
+//建立一个此类的公共实例即可调用实例方法计算。
+//不使用静态方法以提供对计算方法的拓展。
+//命名规范: rationalAddrational(类型全小写，计算方式首字母大写)
+class RealComputer {
+    public rationalAddrational(a: Rational, b: Rational): Rational {
+        return new Rational(a.self * b.divisor + b.self * a.divisor, a.divisor * b.divisor);
+    }
+    public rationalAddothers(a: Rational, b: Irrational | Uncertain | UncertainItem) {
+        return Polynomial.create(Monomial.create(a), Monomial.create(b));
+    }
+}
 abstract class RealComputable {
     static addReal(a: RealComputable, b: RealComputable): RealComputable {
         if (b == undefined) return a;
@@ -142,7 +154,6 @@ abstract class RealComputable {
             }
         throw new Error("未定义的运算:add(" + a + "," + b + ")");
     }
-    //进度: 正在实现mulReal(a,b)，缺少较多类型的运算实现(Ctrl+F搜索"需要实现")
     static mulReal(a: RealComputable, b: RealComputable): RealComputable {
         if (b == undefined) return a;
         if (a instanceof Rational) {
@@ -589,7 +600,7 @@ class Monomial extends RealComputable {
         throw new Error("此对象无法用于构造单项式: " + i);
     }
     opp(): Monomial { return new Monomial(this.const.opp(), this.uncertains); }
-    rec(): Monomial { return new Monomial(this.const.rec(), this.uncertains.rec()); }
+    rec(): Rational | Irrational | Uncertain | UncertainItem | Monomial { return <Rational | Irrational | Uncertain | UncertainItem | Monomial>RealComputable.mulReal(this.const.rec(), this.uncertains.rec()); }
 }
 class Polynomial extends RealComputable {
     public readonly monomials: Monomial[];
@@ -610,7 +621,7 @@ class Polynomial extends RealComputable {
             tm[i] = tm[i].opp();
         return new Polynomial(tm);
     }
-    rec(): Monomial {
+    rec(): Rational | Irrational | Uncertain | UncertainItem | Monomial {
         if (this.monomials && this.monomials.length == 1) return this.monomials[0].rec();
         throw new Error("暂不支持取多项式倒数");
     }
