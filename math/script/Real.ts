@@ -7,33 +7,42 @@ function copyObject<T extends object>(origin: T): T { return Object.create(origi
 //实现实数范围内的跨类型计算。
 //建立一个此类的公共实例即可调用实例方法计算。
 //不使用静态方法以提供对计算方法的拓展。
-//命名规范: rationalAddrational(类型全小写，计算方式首字母大写)
 class RealComputer {
     public rationalAddrational(a: Rational, b: Rational): Rational {
         return new Rational(a.self * b.divisor + b.self * a.divisor, a.divisor * b.divisor);
     }
-    public irrationalAddirrational(a: Irrational, b: Irrational):  ConstItem | Polynomial{
-        if(RealComputable.equals(a,b))return new ConstItem(new Rational(2,1,true),IrrationalItem.create(a));
-        return <Polynomial>Polynomial.create(Monomial.create(a),Monomial.create(b));
+    public irrationalAddirrational(a: Irrational, b: Irrational): ConstItem | Polynomial {
+        if (RealComputable.equals(a, b))
+            return new ConstItem(new Rational(2, 1, true), IrrationalItem.create(a));
+        return <Polynomial>Polynomial.create(Monomial.create(a), Monomial.create(b));
+    }
+    public uncertainAdduncertain(a: Uncertain, b: Uncertain) {
+        if (RealComputable.equals(a, b))
+            return Monomial.createComplete(new Rational(2, 1, true), undefined, UncertainItem.create(a));
+        return Polynomial.create(Monomial.create(a), Monomial.create(b));
     }
 }
 abstract class RealComputable {
     public static com: RealComputer = new RealComputer();
     static addReal(a: RealComputable, b: RealComputable): RealComputable {
+        if (a == undefined && b == undefined) throw new Error("不能对两个空对象进行运算");
+        if (a == undefined) return b;
         if (b == undefined) return a;
         if (a instanceof Rational) {
-            //a，b均为有理数，分数通分加减法(Rational构造函数负责化简)
-            if (b instanceof Rational)
-             return this.com.rationalAddrational(a, b);
             //a有理数，b无理数/未知数，创建多项式
             if (b instanceof Irrational || b instanceof Uncertain || b instanceof UncertainItem) return Polynomial.create(Monomial.create(a), Monomial.create(b));
+            //a，b均为有理数，分数通分加减法(Rational构造函数负责化简)
+            if (b instanceof Rational)
+                return this.com.rationalAddrational(a, b);
             if (b instanceof ConstItem)
-                if (!b.hasIrrational()) return RealComputable.addReal(a, b.rational);
+                if (!b.hasIrrational())
+                    return this.com.rationalAddrational(a, b.rational);
                 else return Polynomial.create(Monomial.create(a), Monomial.create(b));
             //a有理数，b单项式
             if (b instanceof Monomial)
                 //若b不含无理数和未知数，将有理数部分相加
-                if (!b.hasIrrational() && !b.hasUncertain()) return RealComputable.addReal(a, b.const.rational);
+                if (!b.hasIrrational() && !b.hasUncertain())
+                    return this.com.rationalAddrational(a, b.const.rational);
                 //否则创建多项式
                 else return Polynomial.create(Monomial.create(a), b);
             //a有理数，b多项式
@@ -42,7 +51,7 @@ abstract class RealComputable {
                 for (var i: number = 0; i < b.length(); i++)
                     //若b中某一项不含无理数和未知数，将有理数部分相加
                     if (!b.monomials[i].hasIrrational() && !b.monomials[i].hasUncertain()) {
-                        b.monomials[i] = Monomial.create(<Rational>RealComputable.addReal(a, b.monomials[i].const.rational));
+                        b.monomials[i] = Monomial.create(this.com.rationalAddrational(a, b.monomials[i].const.rational));
                         return b;
                     }
                 //否则在多项式中添加一项
@@ -51,82 +60,134 @@ abstract class RealComputable {
             }
         }
         if (a instanceof Irrational) {
-            //a无理数，b有理数，复用方法
-            if (b instanceof Rational)
-            return Polynomial.create(Monomial.create(a),Monomial.create(b));
+            if (b instanceof Rational || b instanceof Uncertain || b instanceof UncertainItem)
+                return Polynomial.create(Monomial.create(a), Monomial.create(b));
             //a，b均为无理数，判断无理数是否相等，相等返回2a，否则创建多项式
             if (b instanceof Irrational)
-            return this.com.irrationalAddirrational(a,b);
-            //a无理数，b未知数，创建多项式
-            if (b instanceof Uncertain) return Polynomial.create(new Monomial(undefined, a, undefined), new Monomial(undefined, undefined, [b]));
-            if (b instanceof Array) return Polynomial.create(new Monomial(undefined, a, undefined), new Monomial(undefined, undefined, b));
+                return this.com.irrationalAddirrational(a, b);
+            if (b instanceof ConstItem)
+                if (b.hasIrrational() && RealComputable.equals(a, b.irrational))
+                    return new ConstItem(this.com.rationalAddrational(Rational.One, b.rational), IrrationalItem.create(a));
+                else return Polynomial.create(Monomial.create(a), Monomial.create(b));
             //a无理数，b单项式
             if (b instanceof Monomial)
                 //若b中无理数等于a且不含未知数，将有理数部分+1
-                if (a && a.equals(b.irrational) && !b.hasUncertain()) return new Monomial(<Rational>b.rational.add(Rational.One), a, undefined);
+                if (RealComputable.equals(a, b.const.irrational) && !b.hasUncertain())
+                    return Monomial.createComplete(this.com.rationalAddrational(Rational.One, b.const.rational), [a]);
                 //否则创建多项式
-                else return Polynomial.create(new Monomial(undefined, a, undefined), b);
+                else return Polynomial.create(Monomial.create(a), b);
             //a无理数，b多项式
             if (b instanceof Polynomial) {
                 for (var i: number = 0; i < b.length(); i++)
                     //若b中某一项无理数等于a且不含未知数，将有理数部分+1
-                    if (b.monomials[i].irrational.equals(a) && !b.monomials[i].hasUncertain()) {
-                        b.monomials[i] = new Monomial(<Rational>Rational.One.add(b.monomials[i].rational), a);
+                    if (b.monomials[i].const.irrational.equals(a) && !b.monomials[i].hasUncertain()) {
+                        b.monomials[i] = Monomial.createComplete(this.com.rationalAddrational(Rational.One, b.monomials[i].const.rational), [a]);
                         return b;
                     }
                 //否则在多项式中添加一项
-                b.monomials[i] = new Monomial(undefined, a, undefined);
+                b.monomials[i] = Monomial.create(a);
                 return b;
             }
         }
+        if (a instanceof ConstItem) {
+            if (a.hasIrrational()) {
+                if (b instanceof Rational || b instanceof Uncertain || b instanceof UncertainItem)
+                    return Polynomial.create(Monomial.create(a), Monomial.create(b));
+                //a，b均为无理数，判断无理数是否相等，相等返回2a，否则创建多项式
+                if (b instanceof Irrational)
+                    return this.com.irrationalAddirrational(a, b);
+                if (b instanceof ConstItem)
+                    if (b.hasIrrational() && RealComputable.equals(a, b.irrational))
+                        return new ConstItem(this.com.rationalAddrational(a.rational, b.rational), IrrationalItem.create(a.irrational));
+                    else return Polynomial.create(Monomial.create(a), Monomial.create(b));
+                //a无理数，b单项式
+                if (b instanceof Monomial)
+                    //若b中无理数等于a且不含未知数，将有理数部分+1
+                    if (RealComputable.equals(a.irrational, b.const.irrational) && !b.hasUncertain())
+                        return Monomial.createComplete(this.com.rationalAddrational(a.rational, b.const.rational), [a.irrational]);
+                    //否则创建多项式
+                    else return Polynomial.create(Monomial.create(a), b);
+                //a无理数，b多项式
+                if (b instanceof Polynomial) {
+                    for (var i: number = 0; i < b.length(); i++)
+                        //若b中某一项无理数等于a且不含未知数，将有理数部分+1
+                        if (b.monomials[i].const.irrational.equals(a.irrational) && !b.monomials[i].hasUncertain()) {
+                            b.monomials[i] = Monomial.createComplete(this.com.rationalAddrational(a.rational, b.monomials[i].const.rational), [a.irrational]);
+                            return b;
+                        }
+                    //否则在多项式中添加一项
+                    b.monomials[i] = Monomial.create(a);
+                    return b;
+                }
+            } else return RealComputable.addReal(a.rational, b);
+        }
         if (a instanceof Uncertain) {
             //a未知数，b为有理数或无理数，复用方法
-            if (b instanceof Rational || b instanceof Irrational) return RealComputable.addReal(b, a);
+            if (b instanceof Rational || b instanceof Irrational || b instanceof ConstItem)
+                return Polynomial.create(Monomial.create(a), Monomial.create(b));
             //a，b均为未知数，如果符号和指数相同，返回2a，否则创建多项式
             if (b instanceof Uncertain)
-                if (a.symbol == b.symbol && a.exponent == b.exponent) return new Monomial(new Rational(2, 1), undefined, [a]);
-                else return Polynomial.create(new Monomial(undefined, undefined, [a]), new Monomial(undefined, undefined, [b]));
-            if (b instanceof Array)
-                if (b.length == 1 && a.equals(b[0])) return new Monomial(new Rational(2, 1), undefined, b);
-                else return Polynomial.create(new Monomial(undefined, undefined, [a]), new Monomial(undefined, undefined, b));
+                return this.com.uncertainAdduncertain(a, b);
+            if (b instanceof UncertainItem)
+                if (b.length() == 1)
+                    return this.com.uncertainAdduncertain(a, b.uncertains[0]);
+                else return Polynomial.create(Monomial.create(a), Monomial.create(b));
             //a未知数，b单项式，若b不含无理数且未知数符号和指数等于a，将有理数部分+1，否则创建多项式
             if (b instanceof Monomial)
-                if (!b.hasIrrational && b.hasUncertain() && b.uncertains.length == 1 && b.uncertains[0].equals(a)) return new Monomial(<Rational>Rational.One.add(b.rational), undefined, [a]);
-                else return Polynomial.create(new Monomial(undefined, undefined, [a]), b);
+                if (!b.hasIrrational && b.hasUncertain() && b.uncertains.uncertains.length == 1 && RealComputable.equals(a, b.uncertains.uncertains[0])) return Monomial.createComplete(this.com.rationalAddrational(Rational.One, b.const.rational), undefined, UncertainItem.create(a));
+                else return Polynomial.create(Monomial.create(a), b);
             //a未知数，b多项式
             if (b instanceof Polynomial) {
                 for (var i: number = 0; i < b.length(); i++)
                     //若b中某一项不含无理数且未知数符号和指数等于a，将有理数部分+1
-                    if (!b.monomials[i].hasIrrational() && b.monomials[i].hasUncertain() && b.monomials[i].uncertains.length == 1 && b.monomials[i].equals(a)) {
-                        b.monomials[i] = new Monomial(<Rational>Rational.One.add(b.monomials[i].rational), undefined, [a]);
+                    if (!b.monomials[i].hasIrrational() && b.monomials[i].hasUncertain() && b.monomials[i].uncertains.uncertains.length == 1 && RealComputable.equals(a, b.monomials[i].uncertains.uncertains[0])) {
+                        b.monomials[i] = Monomial.createComplete(this.com.rationalAddrational(Rational.One, b.monomials[i].const.rational), undefined, UncertainItem.create(a));
                         return b;
                     }
                 //否则在多项式中添加一项
-                b.monomials[i] = new Monomial(undefined, undefined, [a]);
+                b.monomials[i] = Monomial.create(a);
+                return b;
+            }
+        }
+        if (a instanceof UncertainItem) {
+            if (a.uncertains.length == 1)
+                return RealComputable.addReal(a.uncertains[0], b);
+            if (b instanceof Rational || b instanceof Irrational || b instanceof ConstItem || b instanceof UncertainItem)
+                return Polynomial.create(Monomial.create(a), Monomial.create(b));
+            if (b instanceof UncertainItem)
+                if (RealComputable.equals(a, b))
+                    return Monomial.createComplete(new Rational(2, 1, true), undefined, a);
+                else return Polynomial.create(Monomial.create(a), Monomial.create(b));
+            if (b instanceof Monomial)
+                if (!b.hasIrrational() && b.hasUncertain() && RealComputable.equals(a, b.uncertains))
+                    return Monomial.createComplete(this.com.rationalAddrational(Rational.One, b.const.rational), undefined, a);
+            if (b instanceof Polynomial) {
+                for (var i: number = 0; i < b.monomials.length; i++) {
+                    if (!b.monomials[i].hasIrrational() && b.monomials[i].hasUncertain() && RealComputable.equals(a, b.monomials[i].uncertains))
+                        b.monomials[i] = Monomial.createComplete(this.com.rationalAddrational(Rational.One, b.monomials[i].const.rational), undefined, a);
+                    return b;
+                }
+                b.monomials[i] = Monomial.create(a);
                 return b;
             }
         }
         if (a instanceof Monomial) {
             //a单项式，b为有理数或无理数或未知数，复用方法
-            if (b instanceof Rational || b instanceof Irrational || b instanceof Uncertain) return RealComputable.addReal(b, a);
-            if (b instanceof Array) {
-                if (uncertainEquals(a.uncertains, b)) return new Monomial(<Rational>RealComputable.addReal(a.rational, Rational.One), a.irrational, b);
-                else return Polynomial.create(a, new Monomial(undefined, undefined, b));
-            }
+            if (b instanceof Rational || b instanceof Irrational || b instanceof ConstItem || b instanceof Uncertain || b instanceof UncertainItem) return RealComputable.addReal(b, a);
             //a，b均为单项式
             if (b instanceof Monomial) {
                 //a，b无理数部分相同或不含无理数
-                if ((a.hasIrrational() && b.hasIrrational() && a.irrational.equals(b.irrational)) || (!a.hasIrrational() && !b.hasIrrational()))
+                if ((a.hasIrrational() && b.hasIrrational() && a.const.irrational.equals(b.const.irrational)) || (!a.hasIrrational() && !b.hasIrrational()))
                     //若a，b均含未知数且完全相同，或a，b均不含未知数，则将有理数部分相加
-                    if (uncertainEquals(a.uncertains, b.uncertains)) return new Monomial(<Rational>RealComputable.addReal(a.rational, b.rational), a.irrational, a.uncertains);
+                    if (RealComputable.equals(a.uncertains, b.uncertains)) return Monomial.createComplete(this.com.rationalAddrational(a.const.rational, b.const.rational), a.hasIrrational() ? [a.const.irrational] : undefined, a.uncertains);
                 //否则连接a，b创建多项式
                 return Polynomial.create(a, b);
             }
             if (b instanceof Polynomial) {
                 for (var i: number = 0; i < b.length(); i++)
                     //若b中某一项与a无理数部分相同或不含无理数，将有理数部分相加
-                    if (((a.hasIrrational() && b.monomials[i].hasIrrational() && a.irrational.equals(b.monomials[i].irrational)) || (!a.hasIrrational() && !b.monomials[i].hasIrrational())) && (uncertainEquals(a.uncertains, b.monomials[i].uncertains))) {
-                        b.monomials[i] = new Monomial(<Rational>a.rational.add(b.monomials[i].rational), a.irrational, a.uncertains);
+                    if (((a.hasIrrational() && b.monomials[i].hasIrrational() && RealComputable.equals(a.const.irrational, b.monomials[i].const.irrational)) || (!a.hasIrrational() && !b.monomials[i].hasIrrational())) && (RealComputable.equals(a.uncertains, b.monomials[i].uncertains))) {
+                        b.monomials[i] = Monomial.createComplete(this.com.rationalAddrational(a.const.rational, b.monomials[i].const.rational), a.hasIrrational() ? [a.const.irrational] : undefined, a.uncertains);
                     }
 
                 //否则在多项式中添加一项
@@ -134,23 +195,9 @@ abstract class RealComputable {
                 return b;
             }
         }
-        if (a instanceof Array) {
-            if (b instanceof Rational || b instanceof Irrational || b instanceof Uncertain || b instanceof Monomial) return RealComputable.addReal(b, a);
-            if (b instanceof Array) if (uncertainEquals(a, b)) return new Monomial(new Rational(2, 1), undefined, a);
-            else return Polynomial.create(new Monomial(undefined, undefined, a), new Monomial(undefined, undefined, b));
-            if (b instanceof Polynomial) {
-                for (var i: number = 0; i < b.length(); i++) {
-                    if (uncertainEquals(a, b.monomials[i].uncertains))
-                        b.monomials[i] = new Monomial(<Rational>RealComputable.addReal(Rational.One, b.monomials[i].rational), b.monomials[i].irrational, a);
-                    return b;
-                }
-                b.monomials[i] = new Monomial(undefined, undefined, a);
-                return b;
-            }
-        }
         if (a instanceof Polynomial)
             //a为多项式，b为，复用方法
-            if (b instanceof Rational || b instanceof Irrational || b instanceof Uncertain || b instanceof Monomial || b instanceof Array)
+            if (b instanceof Rational || b instanceof Irrational || a instanceof ConstItem || b instanceof Uncertain || b instanceof Monomial)
                 return RealComputable.addReal(b, a);
             else if (b instanceof Polynomial) {
                 //***需要实现
@@ -566,6 +613,9 @@ class IrrationalItem extends Irrational {
 class UncertainItem extends RealComputable {
     public readonly uncertains: Uncertain[];
     length(): number { return this.uncertains.length; }
+    static create(...u: Uncertain[]): UncertainItem {
+        return new UncertainItem(u);
+    }
     constructor(u: Uncertain[]) {
         super();
         if (!u || u.length <= 0) throw new Error("无法构造无内容的未知数项");
