@@ -1,4 +1,28 @@
+windowSnack = []; // 决定窗口先后顺序
+                  // 不会有人创建2147483647个窗口把这里整内存溢出了吧
+                  // 不会吧不会吧不会吧
+
+function _upgradeZ_window() {
+    for (i = 0; i < windowSnack.length; i++) {
+        $("#window-item-" + windowSnack[i][0]).css("z-index", String(1000000 + Number(i)));
+    }
+}
+
+function _focus_window(id) {
+    for (i = 0; i < windowSnack.length; i++) {
+        // console.log(id)
+        // console.log(windowSnack[i][0])
+        if (windowSnack[i][0] == id) {
+            windowSnack.splice(i, 1); 
+            windowSnack.push([id, $(`window-item-${id}`)]);
+            break; 
+        }
+    }
+    _upgradeZ_window();
+}
+
 function _window_listener(id) {
+    // var _id = id; 
     $(`#window-item-${id}`).css("z-index", "1000000");
     // 以后在添加覆盖全屏（或一部分pad）的元素时
     // 一定要在CSS里加上pointer-events: none;
@@ -13,11 +37,13 @@ function _window_listener(id) {
         $(this).parent().toggleClass("window-stick-fullscreen");
     });
     $(`#window-head-${id}`).mousedown(function (event) {
-        // 不会真有人闲得点窗口标题1000000下吧，不会吧不会吧不会吧
-        $(".window-item").each(function (index, element) {
-            $(element).css("z-index", Number($(element).css("z-index")) - 1);
-        });
-        $(this).parent().css("z-index", "1000000");
+        // 废弃这种方式
+        // $(".window-item").each(function (index, element) {
+        //     $(element).css("z-index", Number($(element).css("z-index")) - 1);
+        // });
+        // console.log(Number(this.id.split("-")[2]));
+        _focus_window(Number(this.id.split("-")[2])); 
+        // $(this).parent().css("z-index", "1000000");
         if (!$(this).parent().hasClass("window-stick-fullscreen")) {
             var reachL = false;
             var reachR = false;
@@ -141,6 +167,7 @@ function _window_listener(id) {
     $(`#window-cbtn-${id}`).click(function () {
         $(this).parent().parent().remove();
     });
+    windowSnack.push([id, $(`#window-item-${id}`)]); // 啊这
 }
 
 // 从1开始
