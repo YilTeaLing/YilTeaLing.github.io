@@ -3,8 +3,8 @@ Copyright © 2020 All rights reserved.
 Author: LonelyDagger, Passthem, Tealing
 DONOT DISTRIBUTE! VIOLATORS WILL BE DEALT WITH ACCORDING TO LAW.
  *//*
-总进度:正改善算法。使用valueOf()和toString()方法得到对象的最简表示方式(值等效转换，使用json序列化不能跨类型比较)。
-具体进度:已实现所有类的valueOf()和toString()方法。已改善equals()算法。
+总进度:继续实现乘法。
+具体进度:放弃使用valueOf()优化算法(有可能返回数组)。
 位置: Unknown
 */function copyObject<T extends object>(origin: T): T { return Object.create(origin).__proto__; }
 //实现实数范围内的跨类型计算。
@@ -264,6 +264,7 @@ class RealComputer {
     //#endregion
 }
 abstract class RealComputable {
+    //abstract valueOf(): RealComputable;
     abstract toString(): string;
     public static com: RealComputer = new RealComputer();
     static addReal(a: RealComputable, b: RealComputable): RealComputable {
@@ -572,7 +573,7 @@ abstract class RealComputable {
     equals(n: RealComputable): boolean { return RealComputable.equals(this, n); }
 }
 class Uncertain extends RealComputable {
-    public valueOf() { return this; }
+    public valueOf(): Uncertain { return this; }
     public toString(): string { return this.exponent == 1 ? this.symbol : (this.symbol + "^" + this.exponent); }
     public readonly symbol: string;
     public readonly exponent: number;
@@ -596,7 +597,7 @@ function checkInt(o: number) {
     if (i >= 0) throw new Error("无效的小数");
 }
 class Rational extends RealComputable {
-    public valueOf() { return this.divisor == 1 ? this.self : this; }
+    public valueOf(): Rational { return this; }
     public toString(): string { return this.divisor == 1 ? this.self.toString() : (this.self + "/" + this.divisor); }
     public static readonly One: Rational = new Rational(1, 1, true);
     public static readonly Zero: Rational = new Rational(0, 1, true);
@@ -670,7 +671,7 @@ abstract class Irrational extends RealComputable {
     abstract rec(): Rational | Irrational | ConstItem;
 }
 class SpecialConst extends Irrational {
-    public valueOf() { return this; }
+    public valueOf(): SpecialConst { return this; }
     public toString(): string { return this.exponent == 1 ? this.type : (this.type + "^" + this.exponent); }
     public readonly type: ConstType;
     public readonly exponent: number;
@@ -695,7 +696,7 @@ function generateSquareNumber() {
 var SquareNumber: number[] = [4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225, 256, 289, 324, 361, 400, 441, 484, 529, 576, 625, 676, 729, 784, 841, 900, 961, 1024, 1089, 1156, 1225, 1296, 1369, 1444, 1521, 1600, 1681, 1764, 1849, 1936, 2025, 2116, 2209, 2304, 2401, 2500];
 if (!SquareNumber) generateSquareNumber();
 class SquareRoot extends Irrational {
-    public valueOf() { return this; }
+    public valueOf(): SquareRoot { return this; }
     public toString(): string { return "√(" + this.self + ")"; }
     public readonly self: number;
     private constructor(s: number) {
@@ -732,8 +733,9 @@ class SquareRoot extends Irrational {
     rec(): ConstItem { return new ConstItem(new Rational(1, this.self), IrrationalItem.create(this)); }
 }
 class ConstItem extends RealComputable {
-    public valueOf() { return this.hasRational() ? (this.hasIrrational() ? this : this.rational.valueOf()) : (this.hasIrrational() ? this.irrational.valueOf() : 1); }
+    public valueOf(): Rational | Irrational | SpecialConst[] | ConstItem { return this.hasRational() ? (this.hasIrrational() ? this : this.rational.valueOf()) : (this.hasIrrational() ? this.irrational.valueOf() : Rational.One); }
     public toString(): string { return this.hasRational() ? (this.hasIrrational() ? (this.rational.toString() + "*" + this.irrational.toString()) : this.rational.toString()) : (this.hasIrrational() ? this.irrational.toString() : "1"); }
+    public valid(): boolean { return this.hasRational() || this.hasIrrational(); }
     public hasRational(): boolean { return !this.rational.equals(Rational.One); }
     public hasIrrational(): boolean { return this.irrational != undefined; }
     opp(): ConstItem { return new ConstItem(this.rational.opp(), this.irrational); }
@@ -752,7 +754,7 @@ class ConstItem extends RealComputable {
     }
 }
 class SpecialConstItem extends Irrational {
-    public valueOf() { return this.consts.length == 1 ? this.consts[0] : this.consts; }
+    public valueOf(): SpecialConst | SpecialConst[] { return this.consts.length == 1 ? this.consts[0].valueOf() : this.consts; }
     public toString(): string { return this.consts.join(""); }
     public readonly consts: SpecialConst[];
     constructor(c: SpecialConst[]) {
@@ -770,7 +772,7 @@ class SpecialConstItem extends Irrational {
     public length(): number { return this.consts.length; }
 }
 class IrrationalItem extends Irrational {
-    public valueOf() { return this.hasConsts() ? (this.hasSquareRoot() ? this : this.consts.valueOf()) : (this.hasSquareRoot() ? this.squareRoot : 1); }
+    public valueOf(): Irrational | ConstItem | Rational | SpecialConst[] { return this.hasConsts() ? (this.hasSquareRoot() ? this : this.consts.valueOf()) : (this.hasSquareRoot() ? this.squareRoot.valueOf() : Rational.One); }
     public toString(): string { return this.hasConsts() ? (this.hasSquareRoot() ? (this.consts.toString() + this.squareRoot.toString()) : this.consts.toString()) : (this.hasSquareRoot() ? this.squareRoot.toString() : "1"); }
     public hasSquareRoot(): boolean { return this.squareRoot != undefined; }
     public hasConsts(): boolean { return this.consts != undefined; }
@@ -797,7 +799,7 @@ class IrrationalItem extends Irrational {
     rec(): Irrational | ConstItem { return <Irrational | ConstItem>RealComputable.mulReal(this.consts?.rec(), this.squareRoot); }
 }
 class UncertainItem extends RealComputable {
-    public valueOf() { return this.uncertains.length == 1 ? this.uncertains[0] : this.uncertains; }
+    public valueOf(): Uncertain | Uncertain[] { return this.uncertains.length == 1 ? this.uncertains[0].valueOf() : this.uncertains; }
     public toString(): string { return this.uncertains.join(""); }
     public readonly uncertains: Uncertain[];
     length(): number { return this.uncertains.length; }
@@ -818,8 +820,8 @@ class UncertainItem extends RealComputable {
     }
 }
 class Monomial extends RealComputable {
-    public valueOf() { return this.hasUncertain() ? this : this.const.valueOf(); }
-    public toString(): string { return this.hasUncertain() ? this.const.toString() + this.uncertains.toString() : this.const.toString(); }
+    public valueOf(): Rational | Irrational | ConstItem | Uncertain | Uncertain[] | Monomial | SpecialConst[] { return this.hasUncertain() ? (this.const.valid() ? this : this.uncertains.valueOf()) : this.const.valueOf(); }
+    public toString(): string { return this.hasUncertain() ? (this.const.valid() ? this.const.toString() : "") + this.uncertains.toString() : this.const.toString(); }
     public hasRational(): boolean { return this.const.hasRational(); }
     public hasIrrational(): boolean { return this.const.hasIrrational(); }
     public hasUncertain(): boolean { return this.uncertains != undefined; }
@@ -853,7 +855,7 @@ class Monomial extends RealComputable {
     rec(): Rational | Irrational | Uncertain | UncertainItem | Monomial { return <Rational | Irrational | Uncertain | UncertainItem | Monomial>RealComputable.mulReal(this.const.rec(), this.uncertains.rec()); }
 }
 class Polynomial extends RealComputable {
-    public valueOf() { return this.monomials.length == 1 ? this.monomials[0] : this.monomials; }
+    public valueOf(): Rational | ConstItem | Monomial | Monomial[] | Irrational | Uncertain | Uncertain[] | SpecialConst[] { return this.monomials.length == 1 ? this.monomials[0].valueOf() : this.monomials; }
     public toString(): string { return this.monomials.join("+"); }
     public readonly monomials: Monomial[];
     length(): number { return this.monomials.length; }

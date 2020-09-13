@@ -30,10 +30,10 @@
         }
 
         #contentPanel {
-            /* margin-top: 5px; */
             width: 100%;
-            height: auto;
+            height: calc(100vh - 139px);
             position: absolute;
+            overflow: hidden;
         }
 
         #contentPanel p {
@@ -169,7 +169,6 @@
 
         #contentPanel div::-webkit-scrollbar {
             width: 5px;
-            /* background-color: white; */
         }
 
         #contentPanel div::-webkit-scrollbar-thumb {
@@ -338,11 +337,11 @@
         _bg_changed = [];
         function itemClick(element) {
             /* 点按后将对应的p-button的background-color切换为rgb(73, 142, 158) */
-            for (var i=0; i < _bg_changed.length; i++) {
-                _bg_changed[i].style.backgroundColor = "rgb(73, 142, 158, 0)"; 
+            for (var i = 0; i < _bg_changed.length; i++) {
+                _bg_changed[i].style.backgroundColor = "rgb(73, 142, 158, 0)";
             }
-            element.style.backgroundColor = "rgb(73, 142, 158)"; 
-            _bg_changed.push(element); 
+            element.style.backgroundColor = "rgb(73, 142, 158)";
+            _bg_changed.push(element);
         }
         var ani;
 
