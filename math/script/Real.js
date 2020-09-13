@@ -1,79 +1,98 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /*
 Copyright © 2020 All rights reserved.
 Author: LonelyDagger, Passthem, Tealing
 DONOT DISTRIBUTE! VIOLATORS WILL BE DEALT WITH ACCORDING TO LAW.
- *//*
-总进度:正改善算法。使用valueOf()和toString()方法得到对象的最简表示方式(值等效转换，使用json序列化不能跨类型比较)。
+ */ /*
+总进度:正改善算法。使用valueOf()和toString()方法得到对象的最简表示方式。
 具体进度:已实现所有类的valueOf()和toString()方法。已改善equals()算法。
 位置: Unknown
-*/function copyObject<T extends object>(origin: T): T { return Object.create(origin).__proto__; }
+*/ function copyObject(origin) { return Object.create(origin).__proto__; }
 //实现实数范围内的跨类型计算。
 //建立一个此类的公共实例即可调用实例方法计算。
 //不使用静态方法以提供对计算方法的拓展。
 //优先级:RealComputable(简称Real,不推荐使用此基类运算),Rational,Irrational(SpecialConst,SpecialConstItem,SquareRoot,IrrationalItem),ConstItem,Uncertain,UncertainItem,Monomial,Polynomial
-class RealComputer {
-    //#region 有理数加法
-    public rationalAddrational(a: Rational, b: Rational): Rational {
-        return new Rational(a.self * b.divisor + b.self * a.divisor, a.divisor * b.divisor);
+var RealComputer = /** @class */ (function () {
+    function RealComputer() {
     }
-    public rationalAddconstItem(a: Rational, b: ConstItem): Rational | Polynomial {
+    //#region 有理数加法
+    RealComputer.prototype.rationalAddrational = function (a, b) {
+        return new Rational(a.self * b.divisor + b.self * a.divisor, a.divisor * b.divisor);
+    };
+    RealComputer.prototype.rationalAddconstItem = function (a, b) {
         if (!b.hasIrrational())
             return this.rationalAddrational(a, b.rational);
-        else return <Polynomial>Polynomial.create(Monomial.create(a), Monomial.create(b));
-    }
-    public rationalAddmonomial(a: Rational, b: Monomial): Rational | Polynomial {
+        else
+            return Polynomial.create(Monomial.create(a), Monomial.create(b));
+    };
+    RealComputer.prototype.rationalAddmonomial = function (a, b) {
         //若b不含无理数和未知数，将有理数部分相加
         if (!b.hasIrrational() && !b.hasUncertain())
-            return this.rationalAddrational(a, b.const.rational);
+            return this.rationalAddrational(a, b["const"].rational);
         //否则创建多项式
-        else return <Polynomial>Polynomial.create(Monomial.create(a), b);
-    }
-    public rationalAddpolynomial(a: Rational, b: Polynomial): Polynomial {
-        let tp: Polynomial = copyObject(b);
-        for (var i: number = 0; i < tp.length(); i++)
+        else
+            return Polynomial.create(Monomial.create(a), b);
+    };
+    RealComputer.prototype.rationalAddpolynomial = function (a, b) {
+        var tp = copyObject(b);
+        for (var i = 0; i < tp.length(); i++)
             //若b中某一项不含无理数和未知数，将有理数部分相加
             if (!tp.monomials[i].hasIrrational() && !tp.monomials[i].hasUncertain()) {
-                tp.monomials[i] = Monomial.create(this.rationalAddrational(a, tp.monomials[i].const.rational));
+                tp.monomials[i] = Monomial.create(this.rationalAddrational(a, tp.monomials[i]["const"].rational));
                 return tp;
             }
         //否则在多项式中添加一项
         tp.monomials[i] = Monomial.create(a);
         return tp;
-    }
+    };
     //#endregion
     //#region 无理数加法
-    public irrationalAddirrational(a: Irrational, b: Irrational): ConstItem | Polynomial {
+    RealComputer.prototype.irrationalAddirrational = function (a, b) {
         if (RealComputable.equals(a, b))
             return new ConstItem(new Rational(2, 1, true), IrrationalItem.create(a));
-        return <Polynomial>Polynomial.create(Monomial.create(a), Monomial.create(b));
-    }
-    public irrationalAddconstItem(a: Irrational, b: ConstItem): ConstItem | Polynomial {
+        return Polynomial.create(Monomial.create(a), Monomial.create(b));
+    };
+    RealComputer.prototype.irrationalAddconstItem = function (a, b) {
         if (b.hasIrrational() && RealComputable.equals(a, b.irrational))
             return new ConstItem(this.rationalAddrational(Rational.One, b.rational), IrrationalItem.create(a));
-        else return <Polynomial>Polynomial.create(Monomial.create(a), Monomial.create(b));
-    }
-    public irrationalAddmonomial(a: Irrational, b: Monomial): ConstItem | Polynomial {
+        else
+            return Polynomial.create(Monomial.create(a), Monomial.create(b));
+    };
+    RealComputer.prototype.irrationalAddmonomial = function (a, b) {
         //若b中无理数等于a且不含未知数，将有理数部分+1
-        if (RealComputable.equals(a, b.const.irrational) && !b.hasUncertain())
-            return new ConstItem(this.rationalAddrational(Rational.One, b.const.rational), IrrationalItem.create(a));
+        if (RealComputable.equals(a, b["const"].irrational) && !b.hasUncertain())
+            return new ConstItem(this.rationalAddrational(Rational.One, b["const"].rational), IrrationalItem.create(a));
         //否则创建多项式
-        else return <Polynomial>Polynomial.create(Monomial.create(a), b);
-    }
-    public irrationalAddpolynomial(a: Irrational, b: Polynomial): Polynomial {
-        let tp: Polynomial = copyObject(b);
-        for (var i: number = 0; i < tp.length(); i++)
+        else
+            return Polynomial.create(Monomial.create(a), b);
+    };
+    RealComputer.prototype.irrationalAddpolynomial = function (a, b) {
+        var tp = copyObject(b);
+        for (var i = 0; i < tp.length(); i++)
             //若b中某一项无理数等于a且不含未知数，将有理数部分+1
-            if (tp.monomials[i].const.irrational.equals(a) && !tp.monomials[i].hasUncertain()) {
-                tp.monomials[i] = Monomial.createComplete(this.rationalAddrational(Rational.One, tp.monomials[i].const.rational), IrrationalItem.create(a));
+            if (tp.monomials[i]["const"].irrational.equals(a) && !tp.monomials[i].hasUncertain()) {
+                tp.monomials[i] = Monomial.createComplete(this.rationalAddrational(Rational.One, tp.monomials[i]["const"].rational), IrrationalItem.create(a));
                 return tp;
             }
         //否则在多项式中添加一项
         tp.monomials[i] = Monomial.create(a);
         return tp;
-    }
+    };
     //#endregion
     //#region 常数项加法
-    public constItemAddreal(a: ConstItem, b: RealComputable): Rational | ConstItem | Monomial | Polynomial {
+    RealComputer.prototype.constItemAddreal = function (a, b) {
         if (a.hasIrrational()) {
             if (b instanceof Rational || b instanceof Uncertain || b instanceof UncertainItem)
                 return Polynomial.create(Monomial.create(a), Monomial.create(b));
@@ -83,164 +102,174 @@ class RealComputer {
             if (b instanceof ConstItem)
                 if (b.hasIrrational() && RealComputable.equals(a, b.irrational))
                     return new ConstItem(this.rationalAddrational(a.rational, b.rational), IrrationalItem.create(a.irrational));
-                else return Polynomial.create(Monomial.create(a), Monomial.create(b));
+                else
+                    return Polynomial.create(Monomial.create(a), Monomial.create(b));
             //a无理数，b单项式
             if (b instanceof Monomial)
                 //若b中无理数等于a且不含未知数，将有理数部分+1
-                if (RealComputable.equals(a.irrational, b.const.irrational) && !b.hasUncertain())
-                    return Monomial.createComplete(this.rationalAddrational(a.rational, b.const.rational), a.irrational);
+                if (RealComputable.equals(a.irrational, b["const"].irrational) && !b.hasUncertain())
+                    return Monomial.createComplete(this.rationalAddrational(a.rational, b["const"].rational), a.irrational);
                 //否则创建多项式
-                else return Polynomial.create(Monomial.create(a), b);
+                else
+                    return Polynomial.create(Monomial.create(a), b);
             //a无理数，b多项式
             if (b instanceof Polynomial) {
-                let tp: Polynomial = copyObject(b);
-                for (var i: number = 0; i < tp.length(); i++)
+                var tp = copyObject(b);
+                for (var i = 0; i < tp.length(); i++)
                     //若b中某一项无理数等于a且不含未知数，将有理数部分+1
-                    if (tp.monomials[i].const.irrational.equals(a.irrational) && !tp.monomials[i].hasUncertain()) {
-                        tp.monomials[i] = Monomial.createComplete(this.rationalAddrational(a.rational, tp.monomials[i].const.rational), a.irrational);
+                    if (tp.monomials[i]["const"].irrational.equals(a.irrational) && !tp.monomials[i].hasUncertain()) {
+                        tp.monomials[i] = Monomial.createComplete(this.rationalAddrational(a.rational, tp.monomials[i]["const"].rational), a.irrational);
                         return tp;
                     }
                 //否则在多项式中添加一项
                 tp.monomials[i] = Monomial.create(a);
                 return tp;
             }
-        } else return <Rational | Polynomial>RealComputable.addReal(a.rational, b);
-    }
+        }
+        else
+            return RealComputable.addReal(a.rational, b);
+    };
     //#endregion
     //#region 未知数加法
-    public uncertainAdduncertain(a: Uncertain, b: Uncertain): Monomial | Polynomial {
+    RealComputer.prototype.uncertainAdduncertain = function (a, b) {
         if (RealComputable.equals(a, b))
             return Monomial.createComplete(new Rational(2, 1, true), undefined, UncertainItem.create(a));
         return Polynomial.create(Monomial.create(a), Monomial.create(b));
-    }
-    public uncertainAdduncertainItem(a: Uncertain, b: UncertainItem): Monomial | Polynomial {
+    };
+    RealComputer.prototype.uncertainAdduncertainItem = function (a, b) {
         if (b.length() == 1)
             return this.uncertainAdduncertain(a, b.uncertains[0]);
-        else return Polynomial.create(Monomial.create(a), Monomial.create(b));
-    }
-    public uncertainAddmonomial(a: Uncertain, b: Monomial): Monomial | Polynomial {
+        else
+            return Polynomial.create(Monomial.create(a), Monomial.create(b));
+    };
+    RealComputer.prototype.uncertainAddmonomial = function (a, b) {
         if (!b.hasIrrational && b.hasUncertain() && b.uncertains.uncertains.length == 1 && RealComputable.equals(a, b.uncertains.uncertains[0]))
-            return Monomial.createComplete(this.rationalAddrational(Rational.One, b.const.rational), undefined, UncertainItem.create(a));
-        else return Polynomial.create(Monomial.create(a), b);
-    }
-    public uncertainAddpolynomial(a: Uncertain, b: Polynomial): Polynomial {
-        let tp: Polynomial = copyObject(b);
-        for (var i: number = 0; i < tp.length(); i++)
+            return Monomial.createComplete(this.rationalAddrational(Rational.One, b["const"].rational), undefined, UncertainItem.create(a));
+        else
+            return Polynomial.create(Monomial.create(a), b);
+    };
+    RealComputer.prototype.uncertainAddpolynomial = function (a, b) {
+        var tp = copyObject(b);
+        for (var i = 0; i < tp.length(); i++)
             //若b中某一项不含无理数且未知数符号和指数等于a，将有理数部分+1
             if (!tp.monomials[i].hasIrrational() && tp.monomials[i].hasUncertain() && tp.monomials[i].uncertains.uncertains.length == 1 && RealComputable.equals(a, tp.monomials[i].uncertains.uncertains[0])) {
-                tp.monomials[i] = Monomial.createComplete(this.rationalAddrational(Rational.One, tp.monomials[i].const.rational), undefined, UncertainItem.create(a));
+                tp.monomials[i] = Monomial.createComplete(this.rationalAddrational(Rational.One, tp.monomials[i]["const"].rational), undefined, UncertainItem.create(a));
                 return tp;
             }
         //否则在多项式中添加一项
         tp.monomials[i] = Monomial.create(a);
         return tp;
-    }
+    };
     //#endregion
     //#region 未知数项加法
-    public uncertainItemAddreal(a: UncertainItem, b: RealComputable): Monomial | Polynomial {
+    RealComputer.prototype.uncertainItemAddreal = function (a, b) {
         if (a.uncertains.length == 1)
-            return <Monomial | Polynomial>RealComputable.addReal(a.uncertains[0], b);
+            return RealComputable.addReal(a.uncertains[0], b);
         if (b instanceof Rational || b instanceof Irrational || b instanceof ConstItem || b instanceof UncertainItem)
             return Polynomial.create(Monomial.create(a), Monomial.create(b));
         if (b instanceof UncertainItem)
             if (RealComputable.equals(a, b))
                 return Monomial.createComplete(new Rational(2, 1, true), undefined, a);
-            else return Polynomial.create(Monomial.create(a), Monomial.create(b));
+            else
+                return Polynomial.create(Monomial.create(a), Monomial.create(b));
         if (b instanceof Monomial)
             if (!b.hasIrrational() && b.hasUncertain() && RealComputable.equals(a, b.uncertains))
-                return Monomial.createComplete(this.rationalAddrational(Rational.One, b.const.rational), undefined, a);
+                return Monomial.createComplete(this.rationalAddrational(Rational.One, b["const"].rational), undefined, a);
         if (b instanceof Polynomial) {
-            let tp: Polynomial = copyObject(b);
-            for (var i: number = 0; i < tp.monomials.length; i++)
+            var tp = copyObject(b);
+            for (var i = 0; i < tp.monomials.length; i++)
                 if (!tp.monomials[i].hasIrrational() && tp.monomials[i].hasUncertain() && RealComputable.equals(a, tp.monomials[i].uncertains)) {
-                    tp.monomials[i] = Monomial.createComplete(this.rationalAddrational(Rational.One, tp.monomials[i].const.rational), undefined, a);
+                    tp.monomials[i] = Monomial.createComplete(this.rationalAddrational(Rational.One, tp.monomials[i]["const"].rational), undefined, a);
                     return tp;
                 }
             tp.monomials[i] = Monomial.create(a);
             return tp;
         }
-    }
+    };
     //#endregion
     //#region 单项式加法
-    public monomialAddmonomial(a: Monomial, b: Monomial) {
+    RealComputer.prototype.monomialAddmonomial = function (a, b) {
         //a，b无理数部分相同或不含无理数
-        if ((a.hasIrrational() && b.hasIrrational() && a.const.irrational.equals(b.const.irrational)) || (!a.hasIrrational() && !b.hasIrrational()))
+        if ((a.hasIrrational() && b.hasIrrational() && a["const"].irrational.equals(b["const"].irrational)) || (!a.hasIrrational() && !b.hasIrrational()))
             //若a，b均含未知数且完全相同，或a，b均不含未知数，则将有理数部分相加
             if (RealComputable.equals(a.uncertains, b.uncertains))
-                return Monomial.createComplete(this.rationalAddrational(a.const.rational, b.const.rational), a.hasIrrational() ? a.const.irrational : undefined, a.uncertains);
+                return Monomial.createComplete(this.rationalAddrational(a["const"].rational, b["const"].rational), a.hasIrrational() ? a["const"].irrational : undefined, a.uncertains);
         //否则连接a，b创建多项式
         return Polynomial.create(a, b);
-    }
-    public monomialAddpolynomial(a: Monomial, b: Polynomial) {
-        let tp: Polynomial = copyObject(b);
-        for (var i: number = 0; i < tp.length(); i++)
+    };
+    RealComputer.prototype.monomialAddpolynomial = function (a, b) {
+        var tp = copyObject(b);
+        for (var i = 0; i < tp.length(); i++)
             //若b中某一项与a无理数部分相同或不含无理数，将有理数部分相加
-            if (((a.hasIrrational() && tp.monomials[i].hasIrrational() && RealComputable.equals(a.const.irrational, tp.monomials[i].const.irrational)) || (!a.hasIrrational() && !tp.monomials[i].hasIrrational())) && (RealComputable.equals(a.uncertains, tp.monomials[i].uncertains))) {
-                tp.monomials[i] = Monomial.createComplete(this.rationalAddrational(a.const.rational, tp.monomials[i].const.rational), a.hasIrrational() ? a.const.irrational : undefined, a.uncertains);
+            if (((a.hasIrrational() && tp.monomials[i].hasIrrational() && RealComputable.equals(a["const"].irrational, tp.monomials[i]["const"].irrational)) || (!a.hasIrrational() && !tp.monomials[i].hasIrrational())) && (RealComputable.equals(a.uncertains, tp.monomials[i].uncertains))) {
+                tp.monomials[i] = Monomial.createComplete(this.rationalAddrational(a["const"].rational, tp.monomials[i]["const"].rational), a.hasIrrational() ? a["const"].irrational : undefined, a.uncertains);
                 return tp;
             }
         //否则在多项式中添加一项
         tp.monomials[i] = a;
         return tp;
-    }
+    };
     //#endregion
     //#region 多项式加法
-    public polynomialAddpolynomial(a: Polynomial, b: Polynomial): Polynomial {
-        var tp: Polynomial = copyObject(a);
-        for (let i: number = 0; i < b.monomials.length; i++)
+    RealComputer.prototype.polynomialAddpolynomial = function (a, b) {
+        var tp = copyObject(a);
+        for (var i = 0; i < b.monomials.length; i++)
             tp = this.monomialAddpolynomial(b.monomials[i], tp);
         return tp;
-    }
+    };
     //#endregion
-
     //#region 有理数乘法
-    public rationalMulrational(a: Rational, b: Rational): Rational {
+    RealComputer.prototype.rationalMulrational = function (a, b) {
         return new Rational(a.self * b.self, a.divisor * b.divisor);
-    }
-    public rationalMulirrational(a: Rational, b: Irrational): ConstItem {
+    };
+    RealComputer.prototype.rationalMulirrational = function (a, b) {
         return new ConstItem(a, IrrationalItem.create(b));
-    }
-    public rationalMulconstItem(a: Rational, b: ConstItem): ConstItem {
+    };
+    RealComputer.prototype.rationalMulconstItem = function (a, b) {
         return new ConstItem(b.hasRational() ? this.rationalMulrational(a, b.rational) : a, b.irrational);
-    }
-    public rationalMuluncertain(a: Rational, b: Uncertain): Monomial {
+    };
+    RealComputer.prototype.rationalMuluncertain = function (a, b) {
         return Monomial.createComplete(a, undefined, UncertainItem.create(b));
-    }
-    public rationalMuluncertainItem(a: Rational, b: UncertainItem): Monomial {
+    };
+    RealComputer.prototype.rationalMuluncertainItem = function (a, b) {
         return Monomial.createComplete(a, undefined, b);
-    }
-    public rationalMulmonomial(a: Rational, b: Monomial): Monomial {
-        return Monomial.createComplete(b.hasRational() ? this.rationalMulrational(a, b.const.rational) : a, b.const.irrational, b.uncertains);
-    }
-    public rationalMulpolymomial(a: Rational, b: Polynomial): Polynomial {
-        var tp: Polynomial = copyObject(b);
-        for (let i: number = 0; i < tp.monomials.length; i++)
+    };
+    RealComputer.prototype.rationalMulmonomial = function (a, b) {
+        return Monomial.createComplete(b.hasRational() ? this.rationalMulrational(a, b["const"].rational) : a, b["const"].irrational, b.uncertains);
+    };
+    RealComputer.prototype.rationalMulpolymomial = function (a, b) {
+        var tp = copyObject(b);
+        for (var i = 0; i < tp.monomials.length; i++)
             tp.monomials[i] = this.rationalMulmonomial(a, tp.monomials[i]);
         return tp;
-    }
+    };
     //#endregion
     //#region 无理数乘法
-    public irrationalMulirrational(a: Irrational, b: Irrational): Rational | Irrational | ConstItem {
+    RealComputer.prototype.irrationalMulirrational = function (a, b) {
         if (a instanceof SpecialConst) {
             if (b instanceof SpecialConst)
                 if (a.type == b.type) {
-                    let te: number = a.exponent + b.exponent;
+                    var te = a.exponent + b.exponent;
                     if (te == 0)
                         return Rational.One;
-                    else return new SpecialConst(a.type, te, true);
+                    else
+                        return new SpecialConst(a.type, te, true);
                 }
-                else return IrrationalItem.create(a, b);
+                else
+                    return IrrationalItem.create(a, b);
             if (b instanceof SpecialConstItem) {
-                let tc = copyObject(b.consts);
-                let te: number;
-                for (var i: number; i <= tc.length; i++)
+                var tc = copyObject(b.consts);
+                var te = void 0;
+                for (var i; i <= tc.length; i++)
                     if (a.type == tc[i].type) {
                         te = a.exponent + tc[i].exponent;
                         if (te == 0) {
-                            if (tc.length == 1) return Rational.Zero;
+                            if (tc.length == 1)
+                                return Rational.Zero;
                             tc.splice(i, 1);
                             return new SpecialConstItem(tc);
-                        } else {
+                        }
+                        else {
                             tc[i] = new SpecialConst(a.type, te);
                             return new SpecialConstItem(tc);
                         }
@@ -251,7 +280,7 @@ class RealComputer {
             if (b instanceof SquareRoot)
                 return IrrationalItem.create(a, b);
             if (b instanceof IrrationalItem)
-                return <Rational | Irrational>RealComputable.mulReal(this.irrationalMulirrational(a, b.consts), b.squareRoot);
+                return RealComputable.mulReal(this.irrationalMulirrational(a, b.consts), b.squareRoot);
         }
         if (a instanceof SpecialConstItem) {
             if (b instanceof SpecialConst)
@@ -260,13 +289,13 @@ class RealComputer {
                 //尚待完善
             }
         }
+    };
+    return RealComputer;
+}());
+var RealComputable = /** @class */ (function () {
+    function RealComputable() {
     }
-    //#endregion
-}
-abstract class RealComputable {
-    abstract toString(): string;
-    public static com: RealComputer = new RealComputer();
-    static addReal(a: RealComputable, b: RealComputable): RealComputable {
+    RealComputable.addReal = function (a, b) {
         if (a == undefined && b == undefined)
             throw new Error("不能对两个空对象进行加运算");
         if (a == undefined)
@@ -356,9 +385,9 @@ abstract class RealComputable {
                 return this.com.polynomialAddpolynomial(a, b);
         }
         throw new Error("未定义的运算:add(" + a + "," + b + ")");
-    }
+    };
     //此方法停留在较老的版本。将移植所有计算逻辑至RealComputer中。
-    static mulReal(a: RealComputable, b: RealComputable): RealComputable {
+    RealComputable.mulReal = function (a, b) {
         throw new Error("T");
         /*{
           if (a == undefined && b == undefined)
@@ -494,8 +523,9 @@ abstract class RealComputable {
               //***需要实现
           }
           throw new Error("未定义的运算:mul(" + a + "," + b + ")");
-      }*/}
-    static equals(a: RealComputable, b: RealComputable): boolean {
+      }*/ 
+    };
+    RealComputable.equals = function (a, b) {
         return a.toString() == b.toString();
         /*if (a == b)
             return true;
@@ -562,52 +592,59 @@ abstract class RealComputable {
                 }
             }
         return false;*/
-    }
-    abstract opp(): RealComputable;
-    abstract rec(): RealComputable;
-    add(n: RealComputable): RealComputable { return RealComputable.addReal(this, n); }
-    min(n: RealComputable): RealComputable { return this.add(n.opp()); }
-    mul(n: RealComputable): RealComputable { { return RealComputable.mulReal(this, n); } }
-    div(n: RealComputable): RealComputable { return this.mul(n.rec()); }
-    equals(n: RealComputable): boolean { return RealComputable.equals(this, n); }
-}
-class Uncertain extends RealComputable {
-    public valueOf() { return this; }
-    public toString(): string { return this.exponent == 1 ? this.symbol : (this.symbol + "^" + this.exponent); }
-    public readonly symbol: string;
-    public readonly exponent: number;
-    constructor(s: string, e: number = 1, v: boolean = false) {
-        super();
-        this.symbol = s;
-        if (v) this.exponent = e;
+    };
+    RealComputable.prototype.add = function (n) { return RealComputable.addReal(this, n); };
+    RealComputable.prototype.min = function (n) { return this.add(n.opp()); };
+    RealComputable.prototype.mul = function (n) { {
+        return RealComputable.mulReal(this, n);
+    } };
+    RealComputable.prototype.div = function (n) { return this.mul(n.rec()); };
+    RealComputable.prototype.equals = function (n) { return RealComputable.equals(this, n); };
+    RealComputable.com = new RealComputer();
+    return RealComputable;
+}());
+var Uncertain = /** @class */ (function (_super) {
+    __extends(Uncertain, _super);
+    function Uncertain(s, e, v) {
+        if (e === void 0) { e = 1; }
+        if (v === void 0) { v = false; }
+        var _this = _super.call(this) || this;
+        _this.symbol = s;
+        if (v)
+            _this.exponent = e;
         else {
-            if (!s || s.length != 1) throw new Error("未知数的命名无效: 长度不能为" + (s ? s.length : "0"));
-            if (!(s >= "a" && s <= "z")) throw new Error("未知数的命名无效: 无效的字符: " + s);
-            if (e == 0) throw new Error("将不会对未知数进行零次幂运算。请尝试改用\"1\"")
+            if (!s || s.length != 1)
+                throw new Error("未知数的命名无效: 长度不能为" + (s ? s.length : "0"));
+            if (!(s >= "a" && s <= "z"))
+                throw new Error("未知数的命名无效: 无效的字符: " + s);
+            if (e == 0)
+                throw new Error("将不会对未知数进行零次幂运算。请尝试改用\"1\"");
             checkInt(e);
-            this.exponent = e;
+            _this.exponent = e;
         }
+        return _this;
     }
-    opp(): Monomial { return Monomial.createComplete(Rational.MinusOne, undefined, new UncertainItem([this])); }
-    rec(): Uncertain { return new Uncertain(this.symbol, -this.exponent, true); }
-}
-function checkInt(o: number) {
+    Uncertain.prototype.valueOf = function () { return this; };
+    Uncertain.prototype.toString = function () { return this.exponent == 1 ? this.symbol : (this.symbol + "^" + this.exponent); };
+    Uncertain.prototype.opp = function () { return Monomial.createComplete(Rational.MinusOne, undefined, new UncertainItem([this])); };
+    Uncertain.prototype.rec = function () { return new Uncertain(this.symbol, -this.exponent, true); };
+    return Uncertain;
+}(RealComputable));
+function checkInt(o) {
     var i = o.toString().indexOf('.');
-    if (i >= 0) throw new Error("无效的小数");
+    if (i >= 0)
+        throw new Error("无效的小数");
 }
-class Rational extends RealComputable {
-    public valueOf() { return this.divisor == 1 ? this.self : this; }
-    public toString(): string { return this.divisor == 1 ? this.self.toString() : (this.self + "/" + this.divisor); }
-    public static readonly One: Rational = new Rational(1, 1, true);
-    public static readonly Zero: Rational = new Rational(0, 1, true);
-    public static readonly MinusOne: Rational = new Rational(-1, 1, true);
-    public readonly self: number;
-    public readonly divisor: number;
-    constructor(s: number, d: number, v: boolean = false) {
-        super();
+var Rational = /** @class */ (function (_super) {
+    __extends(Rational, _super);
+    function Rational(s, d, v) {
+        if (v === void 0) { v = false; }
+        var _this = _super.call(this) || this;
         if (!v) {
-            if (d == 0) throw new Error("分母不能为0");
-            if (s == 0) d = 1;
+            if (d == 0)
+                throw new Error("分母不能为0");
+            if (s == 0)
+                d = 1;
             else {
                 if (d < 0) {
                     d = -d;
@@ -618,14 +655,25 @@ class Rational extends RealComputable {
                 d /= gcd;
             }
         }
-        this.self = s;
-        this.divisor = d;
+        _this.self = s;
+        _this.divisor = d;
+        return _this;
     }
-    opp(): Rational { return new Rational(-this.self, this.divisor); }
-    rec(): Rational { return new Rational(this.divisor, this.self); }
-}
-abstract class Irrational extends RealComputable {
-    public static irrationalEquals(a: Irrational, b: Irrational): boolean {
+    Rational.prototype.valueOf = function () { return this.divisor == 1 ? this.self : this; };
+    Rational.prototype.toString = function () { return this.divisor == 1 ? this.self.toString() : (this.self + "/" + this.divisor); };
+    Rational.prototype.opp = function () { return new Rational(-this.self, this.divisor); };
+    Rational.prototype.rec = function () { return new Rational(this.divisor, this.self); };
+    Rational.One = new Rational(1, 1, true);
+    Rational.Zero = new Rational(0, 1, true);
+    Rational.MinusOne = new Rational(-1, 1, true);
+    return Rational;
+}(RealComputable));
+var Irrational = /** @class */ (function (_super) {
+    __extends(Irrational, _super);
+    function Irrational() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Irrational.irrationalEquals = function (a, b) {
         if (a == b)
             return true;
         if (a instanceof SpecialConst) {
@@ -641,7 +689,7 @@ abstract class Irrational extends RealComputable {
                 return this.irrationalEquals(b, a);
             if (b instanceof SpecialConstItem) {
                 if (a.consts.length == b.consts.length) {
-                    for (let i: number = 0; i < a.consts.length; i++)
+                    for (var i = 0; i < a.consts.length; i++)
                         if (!this.irrationalEquals(a.consts[i], b.consts[i]))
                             return false;
                     return true;
@@ -665,45 +713,56 @@ abstract class Irrational extends RealComputable {
             return this.irrationalEquals(a.squareRoot, b);
         }
         return false;
-    }
-    opp(): ConstItem { return new ConstItem(Rational.MinusOne, IrrationalItem.create(this)) }
-    abstract rec(): Rational | Irrational | ConstItem;
-}
-class SpecialConst extends Irrational {
-    public valueOf() { return this; }
-    public toString(): string { return this.exponent == 1 ? this.type : (this.type + "^" + this.exponent); }
-    public readonly type: ConstType;
-    public readonly exponent: number;
-    constructor(t: ConstType, e: number = 1, v: boolean = false) {
-        super();
-        if (v) this.exponent = e; else {
-            if (e == 0) throw new Error("将不会对特殊常量进行零次幂运算。请尝试改用\"1\"");
+    };
+    Irrational.prototype.opp = function () { return new ConstItem(Rational.MinusOne, IrrationalItem.create(this)); };
+    return Irrational;
+}(RealComputable));
+var SpecialConst = /** @class */ (function (_super) {
+    __extends(SpecialConst, _super);
+    function SpecialConst(t, e, v) {
+        if (e === void 0) { e = 1; }
+        if (v === void 0) { v = false; }
+        var _this = _super.call(this) || this;
+        if (v)
+            _this.exponent = e;
+        else {
+            if (e == 0)
+                throw new Error("将不会对特殊常量进行零次幂运算。请尝试改用\"1\"");
             checkInt(e);
-            this.exponent = e;
+            _this.exponent = e;
         }
-        this.type = t;
+        _this.type = t;
+        return _this;
     }
-    rec(): SpecialConst { return new SpecialConst(this.type, -this.exponent, true); }
-}
-enum ConstType { Pi = "Pi" }
-const MaxSquareBase: number = 50;
+    SpecialConst.prototype.valueOf = function () { return this; };
+    SpecialConst.prototype.toString = function () { return this.exponent == 1 ? this.type : (this.type + "^" + this.exponent); };
+    SpecialConst.prototype.rec = function () { return new SpecialConst(this.type, -this.exponent, true); };
+    return SpecialConst;
+}(Irrational));
+var ConstType;
+(function (ConstType) {
+    ConstType["Pi"] = "Pi";
+})(ConstType || (ConstType = {}));
+var MaxSquareBase = 50;
 function generateSquareNumber() {
     SquareNumber = [];
-    for (let i: number = 0; i < MaxSquareBase - 1; i++)
+    for (var i = 0; i < MaxSquareBase - 1; i++)
         SquareNumber[i] = (i + 2) * (i + 2);
 }
-var SquareNumber: number[] = [4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225, 256, 289, 324, 361, 400, 441, 484, 529, 576, 625, 676, 729, 784, 841, 900, 961, 1024, 1089, 1156, 1225, 1296, 1369, 1444, 1521, 1600, 1681, 1764, 1849, 1936, 2025, 2116, 2209, 2304, 2401, 2500];
-if (!SquareNumber) generateSquareNumber();
-class SquareRoot extends Irrational {
-    public valueOf() { return this; }
-    public toString(): string { return "√(" + this.self + ")"; }
-    public readonly self: number;
-    private constructor(s: number) {
-        super();
-        this.self = s;
+var SquareNumber = [4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225, 256, 289, 324, 361, 400, 441, 484, 529, 576, 625, 676, 729, 784, 841, 900, 961, 1024, 1089, 1156, 1225, 1296, 1369, 1444, 1521, 1600, 1681, 1764, 1849, 1936, 2025, 2116, 2209, 2304, 2401, 2500];
+if (!SquareNumber)
+    generateSquareNumber();
+var SquareRoot = /** @class */ (function (_super) {
+    __extends(SquareRoot, _super);
+    function SquareRoot(s) {
+        var _this = _super.call(this) || this;
+        _this.self = s;
+        return _this;
     }
-    public static unsafeCreate(s: number): SquareRoot { return new SquareRoot(s); }
-    public static create(s: number): SquareRoot | Rational | ConstItem {
+    SquareRoot.prototype.valueOf = function () { return this; };
+    SquareRoot.prototype.toString = function () { return "√(" + this.self + ")"; };
+    SquareRoot.unsafeCreate = function (s) { return new SquareRoot(s); };
+    SquareRoot.create = function (s) {
         if (s < 0)
             throw new Error("负数没有实数平方根");
         if (s == 0)
@@ -711,16 +770,17 @@ class SquareRoot extends Irrational {
         if (s == 1)
             return Rational.One;
         checkInt(s);
-        var index: number = 2;
-        var cu: number = SquareNumber[0];
-        var r: number = 1;
+        var index = 2;
+        var cu = SquareNumber[0];
+        var r = 1;
         while (cu <= s && index <= MaxSquareBase - 1) {
             if (s % cu == 0) {
                 r *= index;
                 s /= cu;
                 if (s == 1)
                     return new Rational(r, 1);
-            } else {
+            }
+            else {
                 index++;
                 cu = SquareNumber[index - 2];
             }
@@ -728,111 +788,145 @@ class SquareRoot extends Irrational {
         if (r == 1)
             return new SquareRoot(s);
         return new ConstItem(new Rational(r, 1), IrrationalItem.create(new SquareRoot(s)));
+    };
+    SquareRoot.prototype.rec = function () { return new ConstItem(new Rational(1, this.self), IrrationalItem.create(this)); };
+    return SquareRoot;
+}(Irrational));
+var ConstItem = /** @class */ (function (_super) {
+    __extends(ConstItem, _super);
+    function ConstItem(r, i) {
+        if (r === void 0) { r = Rational.One; }
+        var _this = _super.call(this) || this;
+        _this.rational = r;
+        _this.irrational = i;
+        return _this;
     }
-    rec(): ConstItem { return new ConstItem(new Rational(1, this.self), IrrationalItem.create(this)); }
-}
-class ConstItem extends RealComputable {
-    public valueOf() { return this.hasRational() ? (this.hasIrrational() ? this : this.rational.valueOf()) : (this.hasIrrational() ? this.irrational.valueOf() : 1); }
-    public toString(): string { return this.hasRational() ? (this.hasIrrational() ? (this.rational.toString() + "*" + this.irrational.toString()) : this.rational.toString()) : (this.hasIrrational() ? this.irrational.toString() : "1"); }
-    public hasRational(): boolean { return !this.rational.equals(Rational.One); }
-    public hasIrrational(): boolean { return this.irrational != undefined; }
-    opp(): ConstItem { return new ConstItem(this.rational.opp(), this.irrational); }
-    rec(): Rational | Irrational | ConstItem {
-        var tr: Rational = this.hasRational() ? this.rational.rec() : Rational.One;
+    ConstItem.prototype.valueOf = function () { return this.hasRational() ? (this.hasIrrational() ? this : this.rational.valueOf()) : (this.hasIrrational() ? this.irrational.valueOf() : 1); };
+    ConstItem.prototype.toString = function () { return this.hasRational() ? (this.hasIrrational() ? (this.rational.toString() + "*" + this.irrational.toString()) : this.rational.toString()) : (this.hasIrrational() ? this.irrational.toString() : "1"); };
+    ConstItem.prototype.hasRational = function () { return !this.rational.equals(Rational.One); };
+    ConstItem.prototype.hasIrrational = function () { return this.irrational != undefined; };
+    ConstItem.prototype.opp = function () { return new ConstItem(this.rational.opp(), this.irrational); };
+    ConstItem.prototype.rec = function () {
+        var tr = this.hasRational() ? this.rational.rec() : Rational.One;
         if (this.hasIrrational())
-            return <Irrational | ConstItem>RealComputable.mulReal(tr, this.irrational.rec());
+            return RealComputable.mulReal(tr, this.irrational.rec());
         return tr;
+    };
+    return ConstItem;
+}(RealComputable));
+var SpecialConstItem = /** @class */ (function (_super) {
+    __extends(SpecialConstItem, _super);
+    function SpecialConstItem(c) {
+        var _this = _super.call(this) || this;
+        if (c && c.length > 0)
+            _this.consts = c;
+        else
+            throw new Error("无法构造无内容的特殊常数项");
+        return _this;
     }
-    public readonly rational: Rational;
-    public readonly irrational: IrrationalItem;
-    constructor(r: Rational = Rational.One, i?: IrrationalItem) {
-        super();
-        this.rational = r;
-        this.irrational = i;
-    }
-}
-class SpecialConstItem extends Irrational {
-    public valueOf() { return this.consts.length == 1 ? this.consts[0] : this.consts; }
-    public toString(): string { return this.consts.join(""); }
-    public readonly consts: SpecialConst[];
-    constructor(c: SpecialConst[]) {
-        super();
-        if (c && c.length > 0) this.consts = c;
-        else throw new Error("无法构造无内容的特殊常数项");
-    }
-    public static create(...c: SpecialConst[]): SpecialConstItem { return new SpecialConstItem(c); }
-    rec(): SpecialConstItem {
-        let ts: SpecialConst[] = new SpecialConst[this.consts.length];
-        for (let i: number = 0; i < ts.length; i++)
-            ts[i] = new SpecialConst(this.consts[i].type, - this.consts[i].exponent);
+    SpecialConstItem.prototype.valueOf = function () { return this.consts.length == 1 ? this.consts[0] : this.consts; };
+    SpecialConstItem.prototype.toString = function () { return this.consts.join(""); };
+    SpecialConstItem.create = function () {
+        var c = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            c[_i] = arguments[_i];
+        }
+        return new SpecialConstItem(c);
+    };
+    SpecialConstItem.prototype.rec = function () {
+        var ts = new SpecialConst[this.consts.length];
+        for (var i = 0; i < ts.length; i++)
+            ts[i] = new SpecialConst(this.consts[i].type, -this.consts[i].exponent);
         return new SpecialConstItem(ts);
+    };
+    SpecialConstItem.prototype.length = function () { return this.consts.length; };
+    return SpecialConstItem;
+}(Irrational));
+var IrrationalItem = /** @class */ (function (_super) {
+    __extends(IrrationalItem, _super);
+    function IrrationalItem(i) {
+        var _this = _super.call(this) || this;
+        if (i.length <= 0)
+            throw new Error("无法构造无内容的无理数项");
+        var ts;
+        for (var a = 0; a < i.length; a++)
+            if (i[a] instanceof SpecialConst)
+                ts[ts.length] = copyObject(i[a]);
+            else if (i[a] instanceof SquareRoot)
+                _this.squareRoot = i[a];
+            else
+                throw new Error("此无理数尚未定义: " + i[a]);
+        if (ts && ts.length > 0)
+            _this.consts = new SpecialConstItem(ts);
+        return _this;
     }
-    public length(): number { return this.consts.length; }
-}
-class IrrationalItem extends Irrational {
-    public valueOf() { return this.hasConsts() ? (this.hasSquareRoot() ? this : this.consts.valueOf()) : (this.hasSquareRoot() ? this.squareRoot : 1); }
-    public toString(): string { return this.hasConsts() ? (this.hasSquareRoot() ? (this.consts.toString() + this.squareRoot.toString()) : this.consts.toString()) : (this.hasSquareRoot() ? this.squareRoot.toString() : "1"); }
-    public hasSquareRoot(): boolean { return this.squareRoot != undefined; }
-    public hasConsts(): boolean { return this.consts != undefined; }
-    //public constLength():number{return consts}
-    public readonly consts: SpecialConstItem;
-    public readonly squareRoot: SquareRoot;
-    private constructor(i: Irrational[]) {
-        super();
-        if (i.length <= 0) throw new Error("无法构造无内容的无理数项");
-        var ts: SpecialConst[];
-        for (var a: number = 0; a < i.length; a++)
-            if (i[a] instanceof SpecialConst) ts[ts.length] = copyObject(<SpecialConst>i[a]);
-            else if (i[a] instanceof SquareRoot) this.squareRoot = <SquareRoot>i[a];
-            else throw new Error("此无理数尚未定义: " + i[a]);
-        if (ts && ts.length > 0) this.consts = new SpecialConstItem(ts);
-    }
-    public static create(...i: Irrational[]): IrrationalItem { return this.createByArray(i); }
-    public static createByArray(i: Irrational[]): IrrationalItem {
+    IrrationalItem.prototype.valueOf = function () { return this.hasConsts() ? (this.hasSquareRoot() ? this : this.consts.valueOf()) : (this.hasSquareRoot() ? this.squareRoot : 1); };
+    IrrationalItem.prototype.toString = function () { return this.hasConsts() ? (this.hasSquareRoot() ? (this.consts.toString() + this.squareRoot.toString()) : this.consts.toString()) : (this.hasSquareRoot() ? this.squareRoot.toString() : "1"); };
+    IrrationalItem.prototype.hasSquareRoot = function () { return this.squareRoot != undefined; };
+    IrrationalItem.prototype.hasConsts = function () { return this.consts != undefined; };
+    IrrationalItem.create = function () {
+        var i = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            i[_i] = arguments[_i];
+        }
+        return this.createByArray(i);
+    };
+    IrrationalItem.createByArray = function (i) {
         if (i.length == 1 && i[0] instanceof IrrationalItem)
-            return <IrrationalItem>i[0];
+            return i[0];
         return new IrrationalItem(i);
+    };
+    IrrationalItem.prototype.opp = function () { return new ConstItem(Rational.MinusOne, this); };
+    IrrationalItem.prototype.rec = function () { var _a; return RealComputable.mulReal((_a = this.consts) === null || _a === void 0 ? void 0 : _a.rec(), this.squareRoot); };
+    return IrrationalItem;
+}(Irrational));
+var UncertainItem = /** @class */ (function (_super) {
+    __extends(UncertainItem, _super);
+    function UncertainItem(u) {
+        var _this = _super.call(this) || this;
+        if (!u || u.length <= 0)
+            throw new Error("无法构造无内容的未知数项");
+        _this.uncertains = u;
+        return _this;
     }
-    opp(): ConstItem { return new ConstItem(Rational.MinusOne, this); }
-    rec(): Irrational | ConstItem { return <Irrational | ConstItem>RealComputable.mulReal(this.consts?.rec(), this.squareRoot); }
-}
-class UncertainItem extends RealComputable {
-    public valueOf() { return this.uncertains.length == 1 ? this.uncertains[0] : this.uncertains; }
-    public toString(): string { return this.uncertains.join(""); }
-    public readonly uncertains: Uncertain[];
-    length(): number { return this.uncertains.length; }
-    static create(...u: Uncertain[]): UncertainItem {
+    UncertainItem.prototype.valueOf = function () { return this.uncertains.length == 1 ? this.uncertains[0] : this.uncertains; };
+    UncertainItem.prototype.toString = function () { return this.uncertains.join(""); };
+    UncertainItem.prototype.length = function () { return this.uncertains.length; };
+    UncertainItem.create = function () {
+        var u = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            u[_i] = arguments[_i];
+        }
         return new UncertainItem(u);
-    }
-    constructor(u: Uncertain[]) {
-        super();
-        if (!u || u.length <= 0) throw new Error("无法构造无内容的未知数项");
-        this.uncertains = u;
-    }
-    opp(): Monomial { return Monomial.createComplete(Rational.MinusOne, undefined, this); }
-    rec(): UncertainItem {
-        let tu: Uncertain[] = copyObject(this.uncertains);
-        for (let i: number = 0; i < tu.length; i++)
+    };
+    UncertainItem.prototype.opp = function () { return Monomial.createComplete(Rational.MinusOne, undefined, this); };
+    UncertainItem.prototype.rec = function () {
+        var tu = copyObject(this.uncertains);
+        for (var i = 0; i < tu.length; i++)
             tu[i] = new Uncertain(tu[i].symbol, -tu[i].exponent);
         return new UncertainItem(tu);
-    }
-}
-class Monomial extends RealComputable {
-    public valueOf() { return this.hasUncertain() ? this : this.const.valueOf(); }
-    public toString(): string { return this.hasUncertain() ? this.const.toString() + this.uncertains.toString() : this.const.toString(); }
-    public hasRational(): boolean { return this.const.hasRational(); }
-    public hasIrrational(): boolean { return this.const.hasIrrational(); }
-    public hasUncertain(): boolean { return this.uncertains != undefined; }
-    public readonly const: ConstItem;
-    public readonly uncertains: UncertainItem;
-    private constructor(c: ConstItem, u: UncertainItem) {
-        super();
-        this.const = c ? c : new ConstItem(Rational.One, undefined);
+    };
+    return UncertainItem;
+}(RealComputable));
+var Monomial = /** @class */ (function (_super) {
+    __extends(Monomial, _super);
+    function Monomial(c, u) {
+        var _this = _super.call(this) || this;
+        _this["const"] = c ? c : new ConstItem(Rational.One, undefined);
         if (u && u.length() > 0)
-            this.uncertains = u;
+            _this.uncertains = u;
+        return _this;
     }
-    public static createComplete(r: Rational = Rational.One, i?: IrrationalItem, u?: UncertainItem): Monomial { return new Monomial(new ConstItem(r, i), u); }
-    public static create(i: Rational | Irrational | ConstItem | Uncertain | UncertainItem): Monomial {
+    Monomial.prototype.valueOf = function () { return this.hasUncertain() ? this : this["const"].valueOf(); };
+    Monomial.prototype.toString = function () { return this.hasUncertain() ? this["const"].toString() + this.uncertains.toString() : this["const"].toString(); };
+    Monomial.prototype.hasRational = function () { return this["const"].hasRational(); };
+    Monomial.prototype.hasIrrational = function () { return this["const"].hasIrrational(); };
+    Monomial.prototype.hasUncertain = function () { return this.uncertains != undefined; };
+    Monomial.createComplete = function (r, i, u) {
+        if (r === void 0) { r = Rational.One; }
+        return new Monomial(new ConstItem(r, i), u);
+    };
+    Monomial.create = function (i) {
         if (i instanceof Rational)
             return new Monomial(new ConstItem(i), undefined);
         if (i instanceof SpecialConst || i instanceof SquareRoot)
@@ -848,39 +942,47 @@ class Monomial extends RealComputable {
         if (i instanceof UncertainItem)
             return new Monomial(undefined, i);
         throw new Error("此对象无法用于构造单项式: " + i);
-    }
-    opp(): Monomial { return new Monomial(this.const.opp(), this.uncertains); }
-    rec(): Rational | Irrational | Uncertain | UncertainItem | Monomial { return <Rational | Irrational | Uncertain | UncertainItem | Monomial>RealComputable.mulReal(this.const.rec(), this.uncertains.rec()); }
-}
-class Polynomial extends RealComputable {
-    public valueOf() { return this.monomials.length == 1 ? this.monomials[0] : this.monomials; }
-    public toString(): string { return this.monomials.join("+"); }
-    public readonly monomials: Monomial[];
-    length(): number { return this.monomials.length; }
-    private constructor(m: Monomial[]) {
-        super();
+    };
+    Monomial.prototype.opp = function () { return new Monomial(this["const"].opp(), this.uncertains); };
+    Monomial.prototype.rec = function () { return RealComputable.mulReal(this["const"].rec(), this.uncertains.rec()); };
+    return Monomial;
+}(RealComputable));
+var Polynomial = /** @class */ (function (_super) {
+    __extends(Polynomial, _super);
+    function Polynomial(m) {
+        var _this = _super.call(this) || this;
         //if (!m || m.length <= 0) throw new Error("无法构造无内容的多项式");
-        this.monomials = m;
+        _this.monomials = m;
+        return _this;
     }
-    static create(...m: Monomial[]): Monomial | Polynomial {
-        if (!m || m.length <= 0) throw new Error("无法构造无内容的多项式");
+    Polynomial.prototype.valueOf = function () { return this.monomials.length == 1 ? this.monomials[0] : this.monomials; };
+    Polynomial.prototype.toString = function () { return this.monomials.join("+"); };
+    Polynomial.prototype.length = function () { return this.monomials.length; };
+    Polynomial.create = function () {
+        var m = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            m[_i] = arguments[_i];
+        }
+        if (!m || m.length <= 0)
+            throw new Error("无法构造无内容的多项式");
         if (m.length == 1)
             return m[0];
         return new Polynomial(m);
-    }
-    opp(): Polynomial {
-        var tm = <Monomial[]>copyObject(this.monomials);
-        for (let i: number; i < tm.length; i++)
+    };
+    Polynomial.prototype.opp = function () {
+        var tm = copyObject(this.monomials);
+        for (var i = void 0; i < tm.length; i++)
             tm[i] = tm[i].opp();
         return new Polynomial(tm);
-    }
-    rec(): Rational | Irrational | Uncertain | UncertainItem | Monomial {
+    };
+    Polynomial.prototype.rec = function () {
         if (this.monomials && this.monomials.length == 1)
             return this.monomials[0].rec();
         throw new Error("暂不支持取多项式倒数");
-    }
-}
-function greatestCommonDivisor(a: number, b: number) {
+    };
+    return Polynomial;
+}(RealComputable));
+function greatestCommonDivisor(a, b) {
     var c = a % b;
     if (c == 0)
         return b;

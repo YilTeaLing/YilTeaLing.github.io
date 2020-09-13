@@ -16,8 +16,6 @@ npm install -g typescript
 tsc .\math\script\Real.ts
 命令来编译Real.ts。若编译成功则不会显示信息，并会在ts文件同级目录下生成同名的js文件。
 5.由于JavaScript并不原生支持TypeScript较多特性(如类型注释)，编译生成的js文件和原ts文件逻辑结构相差可能较大，并且在F12开发人员工具的控制台调试中可能取得意外的效果。
-6.在2020.8.29，Real.ts进行第一次整体重构。重构提升了库的可拓展性，增加了irrationalItem、constItem、uncertainItem等类以符合高级需求。
-7.重构前已保留一份旧版本的副本，命名为Real.old.ts。此副本可在重构后版本取得较大进展后删除。
 
 二 编程规范
 <节释义 本节介绍Real.ts中的编程规范。充分理解它们将有助于对接工作，而对Real.ts的一切修改也须遵循这些规范。>
