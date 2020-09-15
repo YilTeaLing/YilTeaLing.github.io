@@ -231,9 +231,9 @@ class RealComputer {
                 }
                 else return IrrationalItem.create(a, b);
             if (b instanceof SpecialConstItem) {
-                let tc = copyObject(b.consts);
+                let tc: SpecialConst[] = copyObject(b.consts);
                 let te: number;
-                for (var i: number; i <= tc.length; i++)
+                for (var i: number = 0; i <= tc.length; i++)
                     if (a.type == tc[i].type) {
                         te = a.exponent + tc[i].exponent;
                         if (te == 0) {
@@ -251,13 +251,17 @@ class RealComputer {
             if (b instanceof SquareRoot)
                 return IrrationalItem.create(a, b);
             if (b instanceof IrrationalItem)
-                return <Rational | Irrational>RealComputable.mulReal(this.irrationalMulirrational(a, b.consts), b.squareRoot);
+                return <Rational | Irrational>RealComputable.mulReal(RealComputable.mulReal(a, b.consts), b.squareRoot);
         }
         if (a instanceof SpecialConstItem) {
             if (b instanceof SpecialConst)
                 return this.irrationalMulirrational(b, a);
             if (b instanceof SpecialConstItem) {
-                //尚待完善
+                let tc: SpecialConstItem = copyObject(b);
+                for (let i: number = 0; i < a.consts.length; i++) {
+                    let tcs: Rational | SpecialConstItem = <Rational | SpecialConstItem>this.irrationalMulirrational(a.consts[i], b);
+                    if (tcs instanceof SpecialConstItem) tc = tcs;
+                }
             }
         }
     }
